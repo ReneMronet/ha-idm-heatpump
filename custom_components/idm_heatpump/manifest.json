@@ -4,9 +4,10 @@
   "codeowners": ["@ReneMronet"],
   "config_flow": true,
   "dependencies": ["modbus"],
-  "documentation": "https://github.com/ReneMronet/idm_heatpump",
+  "documentation": "https://github.com/ReneMronet/ha-idm-heatpump",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/ReneMronet/idm_heatpump/issues",
-  "requirements": [],
+  "issue_tracker": "https://github.com/ReneMronet/ha-idm-heatpump/issues",
+  "loggers": ["idm_heatpump"],
+  "requirements": ["pymodbus>=2.5.3"],
   "version": "0.1.0"
 }
