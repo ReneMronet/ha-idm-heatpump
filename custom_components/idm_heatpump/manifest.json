@@ -9,5 +9,5 @@
   "issue_tracker": "https://github.com/ReneMronet/ha-idm-heatpump/issues",
   "loggers": ["idm_heatpump"],
   "requirements": ["pymodbus>=2.5.3"],
-  "version": "0.1.0"
+  "version": "0.0.1"
 }
