@@ -1,0 +1,12 @@
+{
+  "domain": "idm_heatpump",
+  "name": "iDM Heat Pump",
+  "documentation": "https://github.com/ReneMronet/idm_heatpump",
+  "issue_tracker": "https://github.com/ReneMronet/idm_heatpump/issues",
+  "dependencies": ["modbus"],
+  "codeowners": ["@ReneMronet"],
+  "requirements": [],
+  "iot_class": "local_polling",
+  "version": "0.1.0",
+  "config_flow": true
+}

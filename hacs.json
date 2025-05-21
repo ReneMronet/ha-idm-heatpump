@@ -1,0 +1,11 @@
+{
+  "name": "iDM Heat Pump",
+  "content_in_root": false,
+  "render_readme": true,
+  "domains": [
+    "sensor",
+    "switch",
+    "select",
+    "number"
+  ]
+}
