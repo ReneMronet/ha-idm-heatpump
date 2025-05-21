@@ -5,8 +5,16 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import CONF_NAME
-from pymodbus.client.sync import ModbusTcpClient
-from pymodbus.exceptions import ConnectionException
+
+# Handle pymodbus import for different versions
+try:
+    # For pymodbus >= 3.0.0
+    from pymodbus.client import ModbusTcpClient
+    from pymodbus.exceptions import ConnectionException
+except ImportError:
+    # For pymodbus < 3.0.0
+    from pymodbus.client.sync import ModbusTcpClient
+    from pymodbus.exceptions import ConnectionException
 
 from .const import (
     DOMAIN,

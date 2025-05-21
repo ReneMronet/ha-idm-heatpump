@@ -5,7 +5,12 @@ from datetime import timedelta
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from pymodbus.client.sync import ModbusTcpClient
+try:
+    # For pymodbus >= 3.0.0
+    from pymodbus.client import ModbusTcpClient
+except ImportError:
+    # For pymodbus < 3.0.0
+    from pymodbus.client.sync import ModbusTcpClient
 from pymodbus.exceptions import ConnectionException, ModbusException
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.constants import Endian
