@@ -149,7 +149,7 @@ class IDMOptionsFlowHandler(config_entries.OptionsFlow):
                             CONF_SCAN_INTERVAL, 
                             self._config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
                         ),
-                    ): vol.All(int, vol.Range(min=10, max=300)),
+                    ): vol.All(int, vol.Range(min=5, max=300)),
                 }
             ),
         )
