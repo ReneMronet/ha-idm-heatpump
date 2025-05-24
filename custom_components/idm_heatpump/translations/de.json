@@ -2,31 +2,31 @@
   "config": {
     "step": {
       "user": {
-        "title": "Verbindung zur iDM Wärmepumpe",
-        "description": "Richte eine Verbindung zu deiner iDM Wärmepumpe mit Navigator 2.0 Regelung ein.",
+        "title": "iDM Navigator 2.0 Wärmepumpe Einrichtung",
+        "description": "Konfigurieren Sie Ihre iDM Wärmepumpe mit Navigator 2.0 Steuerung über Modbus TCP.",
         "data": {
-          "name": "Name",
-          "host": "IP-Adresse",
-          "port": "Port",
-          "unit_id": "Unit ID",
-          "scan_interval": "Abfrageintervall (Sekunden)"
+          "host": "Host IP-Adresse",
+          "port": "Port (Standard: {default_port})",
+          "unit_id": "Modbus Unit ID (Standard: {default_unit_id})",
+          "scan_interval": "Abfrageintervall in Sekunden (Standard: {default_scan_interval})"
         }
       }
     },
     "error": {
-      "cannot_connect": "Verbindung zur iDM Wärmepumpe fehlgeschlagen. Bitte überprüfe die IP-Adresse und stelle sicher, dass Modbus TCP in der Navigator 2.0 Regelung aktiviert ist."
+      "cannot_connect": "Verbindung zur Wärmepumpe fehlgeschlagen. Bitte überprüfen Sie IP-Adresse und Port.",
+      "unknown": "Unerwarteter Fehler während der Einrichtung."
     },
     "abort": {
-      "already_configured": "Diese iDM Wärmepumpe ist bereits konfiguriert."
+      "already_configured": "Gerät ist bereits konfiguriert"
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "iDM Wärmepumpe Optionen",
-        "description": "Konfiguriere das Abfrageintervall und andere Optionen für deine iDM Wärmepumpe Integration.",
+        "description": "Konfigurieren Sie, wie oft Daten von Ihrer Wärmepumpe abgerufen werden.",
         "data": {
-          "scan_interval": "Abfrageintervall (Sekunden)"
+          "scan_interval": "Abfrageintervall (Sekunden, 10-300)"
         }
       }
     }

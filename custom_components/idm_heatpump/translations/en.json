@@ -2,31 +2,31 @@
   "config": {
     "step": {
       "user": {
-        "title": "Connect to iDM Heat Pump",
-        "description": "Set up a connection to your iDM Heat Pump with Navigator 2.0 controller.",
+        "title": "iDM Navigator 2.0 Heat Pump Setup",
+        "description": "Configure your iDM heat pump with Navigator 2.0 control via Modbus TCP.",
         "data": {
-          "name": "Name",
-          "host": "IP Address",
-          "port": "Port",
-          "unit_id": "Unit ID",
-          "scan_interval": "Scan Interval (seconds)"
+          "host": "Host IP Address",
+          "port": "Port (Default: {default_port})",
+          "unit_id": "Modbus Unit ID (Default: {default_unit_id})",
+          "scan_interval": "Polling interval in seconds (Default: {default_scan_interval})"
         }
       }
     },
     "error": {
-      "cannot_connect": "Failed to connect to the iDM Heat Pump, please check the IP address and ensure that Modbus TCP is enabled on the Navigator 2.0 controller."
+      "cannot_connect": "Failed to connect to the heat pump. Please check IP address and port.",
+      "unknown": "Unexpected error during setup."
     },
     "abort": {
-      "already_configured": "This iDM Heat Pump is already configured."
+      "already_configured": "Device is already configured"
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "iDM Heat Pump Options",
-        "description": "Configure the scanning interval and other options for your iDM Heat Pump integration.",
+        "description": "Configure how often data is retrieved from your heat pump.",
         "data": {
-          "scan_interval": "Scan Interval (seconds)"
+          "scan_interval": "Polling interval (seconds, 10–300)"
         }
       }
     }
