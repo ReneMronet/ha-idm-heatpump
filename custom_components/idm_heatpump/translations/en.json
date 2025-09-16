@@ -2,8 +2,8 @@
   "config": {
     "step": {
       "user": {
-        "title": "iDM Navigator 2.0 Heat Pump Setup",
-        "description": "Configure your iDM heat pump with Navigator 2.0 control via Modbus TCP.",
+        "title": "iDM Heat Pump with Navigator 10.0 Setup",
+        "description": "Configure your iDM heat pump with Navigator 10.0 control via Modbus TCP.",
         "data": {
           "host": "Host IP Address",
           "port": "Port (Default: {default_port})",

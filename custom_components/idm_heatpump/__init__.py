@@ -1,7 +1,7 @@
 # custom_components/idm_heatpump/__init__.py
 """
-iDM Navigator 2.0 Heat Pump Integration for Home Assistant
-Custom integration for iDM heat pumps with Navigator 2.0 control via Modbus TCP
+iDM Heat Pump Integration for Home Assistant
+Custom integration for iDM heat pumps with Navigator 10.0 control via Modbus TCP
 """
 
 import logging

@@ -14,6 +14,7 @@ from homeassistant.helpers.entity import EntityCategory
 DOMAIN = "idm_heatpump"
 DEFAULT_NAME = "iDM Heat Pump"
 DEFAULT_PORT = 502
+DEFAULT_SLAVE = 1
 DEFAULT_SCAN_INTERVAL = 30
 
 # Configuration keys
