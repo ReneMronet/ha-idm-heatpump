@@ -86,7 +86,7 @@ If you encounter issues:
 
 Additional Resources
 
-iDM Documentation: 812663_Rev.0 - Navigator 10.0 Modbus Interface
+iDM Documentation: 812170_Rev.7 - Navigator 10.0 Modbus Interface
 Home Assistant Modbus: Official Documentation (https://www.home-assistant.io/integrations/modbus/)
 Pymodbus Library: GitHub Repository (https://github.com/riptideio/pymodbus)
 

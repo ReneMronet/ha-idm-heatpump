@@ -1,18 +1,5 @@
-# custom_components/idm_heatpump/const.py
-"""Constants for the iDM Heat Pump integration."""
-
-from homeassistant.const import (
-    UnitOfTemperature,
-    UnitOfPower,
-    UnitOfEnergy,
-    PERCENTAGE,
-    UnitOfFrequency,
-    UnitOfTime,
-)
-from homeassistant.helpers.entity import EntityCategory
-
 DOMAIN = "idm_heatpump"
-DEFAULT_NAME = "iDM Heat Pump"
+DEFAULT_NAME = "iDM Navigator 10"
 DEFAULT_PORT = 502
 DEFAULT_SLAVE = 1
 DEFAULT_SCAN_INTERVAL = 30
@@ -719,3 +706,6 @@ MODBUS_REGISTERS = {
         "entity_type": "switch"
     }
 }
+DEFAULT_UNIT = 1
+PLATFORMS = ["sensor", "number", "switch", "binary_sensor"]
+SCAN_INTERVAL = 20

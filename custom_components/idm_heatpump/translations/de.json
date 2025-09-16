@@ -4,6 +4,7 @@
       "user": {
         "title": "iDM Wärmepumpe mit Navigator 10.0 Einrichtung",
         "description": "Konfigurieren Sie Ihre iDM Wärmepumpe mit Navigator 2.0 Steuerung über Modbus TCP.",
+        "description": "Konfigurieren Sie Ihre iDM Wärmepumpe mit Navigator 10.0 Steuerung über Modbus TCP.",
         "data": {
           "host": "Host IP-Adresse",
           "port": "Port (Standard: {default_port})",

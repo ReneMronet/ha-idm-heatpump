@@ -1,110 +1,66 @@
-# custom_components/idm_heatpump/number.py
-"""Number platform for iDM Heat Pump."""
-
-import logging
-from typing import Any, Dict, Optional
-
 from homeassistant.components.number import NumberEntity
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from .modbus_handler import ModbusHandler
+from .const import DOMAIN
+NUMBERS = [
+    ("idm_ww_solltemp", 1032, 35, 95, 1),
+    ("idm_hk_a_raumsoll_normal", 1401, 15, 30, 0.5),
+    ("idm_hk_c_raumsoll_normal", 1405, 15, 30, 0.5),
+    ("idm_hk_a_heizkurve", 1429, 0.1, 3.5, 0.1),
+    ("idm_hk_c_heizkurve", 1433, 0.1, 3.5, 0.1),
+    ("idm_hk_a_parallelverschiebung", 1505, 0, 30, 1),
+    ("idm_hk_c_parallelverschiebung", 1507, 0, 30, 1),
+    ("idm_hk_a_heizgrenze", 1442, 0, 50, 1),
+    ("idm_hk_c_heizgrenze", 1444, 0, 50, 1),
+]
 
-from .const import DOMAIN, MODBUS_REGISTERS
-from .coordinator import IDMDataUpdateCoordinator
-
-_LOGGER = logging.getLogger(__name__)
-
-
-async def async_setup_entry(
-    hass: HomeAssistant,
-    entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
-) -> None:
-    """Set up iDM Heat Pump number entities."""
-    coordinator = hass.data[DOMAIN][entry.entry_id]
-    
+async def async_setup_entry(hass, entry, async_add_entities):
+    data = hass.data[DOMAIN][entry.entry_id]
+    handler = ModbusHandler(data['host'], data['port'], data['unit'])
+    handler.connect()
     entities = []
-    skipped_entities = []  # Liste der übersprungenen Entitäten
-    
-    # Create number entities for registers with entity_type = "number"
-    for register_name, config in MODBUS_REGISTERS.items():
-        if config.get("entity_type") == "number":
-            entities.append(IDMNumber(coordinator, register_name, config))
-        elif config.get("entity_type") == "number":
-            skipped_entities.append(register_name)
-    
-    # Log information about entity creation
-    _LOGGER.info("Created %d number entities", len(entities))
-    if skipped_entities:
-        _LOGGER.debug("Skipped number entities: %s", ", ".join(skipped_entities))
-    
+    for name, address, minv, maxv, step in NUMBERS:
+        entities.append(IdmNumber(handler, name, address, minv, maxv, step))
     async_add_entities(entities, True)
 
-
-class IDMNumber(CoordinatorEntity, NumberEntity):
-    """Representation of an iDM Heat Pump number entity."""
-
-    def __init__(
-        self,
-        coordinator: IDMDataUpdateCoordinator,
-        register_name: str,
-        config: Dict[str, Any],
-    ) -> None:
-        """Initialize the number entity."""
-        super().__init__(coordinator)
-        
-        self._register_name = register_name
-        self._config = config
-        self._attr_name = f"iDM {config['name']}"
-        self._attr_unique_id = f"{coordinator.entry.entry_id}_{register_name}"
-        
-        # Set number attributes based on config
-        self._attr_native_unit_of_measurement = config.get("unit")
-        self._attr_device_class = config.get("device_class")
-        self._attr_icon = config.get("icon")
-        self._attr_native_min_value = config.get("min", 0)
-        self._attr_native_max_value = config.get("max", 100)
-        self._attr_native_step = config.get("step", 1)
-        self._attr_mode = "box"  # Allow direct input
-        self._attr_entity_category = config.get("entity_category")
-        
-        # Set device info
-        self._attr_device_info = {
-            "identifiers": {(DOMAIN, coordinator.entry.entry_id)},
-            "name": "iDM Navigator 2.0 Heat Pump",
-            "manufacturer": "iDM Energiesysteme GmbH",
-            "model": "Navigator 2.0",
-            "sw_version": coordinator.entry.data.get("sw_version", "Unknown"),
-            "configuration_url": f"http://{coordinator.host}",
-        }
+class IdmNumber(NumberEntity):
+    def __init__(self, handler, name, address, minv, maxv, step):
+        self._handler = handler
+        self._name = name
+        self._address = address
+        self._min = minv
+        self._max = maxv
+        self._step = step
+        self._value = None
 
     @property
-    def native_value(self) -> Optional[float]:
-        """Return the current value."""
-        value = self.coordinator.data.get(self._register_name)
-        
-        if value is None:
-            return None
-        
-        if isinstance(value, (int, float)):
-            return float(value)
-        
-        return None
-
-    async def async_set_native_value(self, value: float) -> None:
-        """Set new value."""
-        success = await self.coordinator.async_write_register(self._register_name, value)
-        
-        if not success:
-            _LOGGER.error("Failed to set %s to %s", self._register_name, value)
-        else:
-            _LOGGER.debug("Successfully set %s to %s", self._register_name, value)
+    def name(self):
+        return self._name
 
     @property
-    def available(self) -> bool:
-        """Return if entity is available."""
-        return (
-            self.coordinator.last_update_success
-            and self._register_name in self.coordinator.data
-        )
+    def unique_id(self):
+        return f"{self._name}"
+
+    @property
+    def native_min_value(self):
+        return self._min
+
+    @property
+    def native_max_value(self):
+        return self._max
+
+    @property
+    def native_step(self):
+        return self._step
+
+    @property
+    def native_value(self):
+        return self._value
+
+    async def async_update(self):
+        val = self._handler.read_int(self._address)
+        self._value = val
+
+    async def async_set_native_value(self, value: float):
+        ok = self._handler.write_int(self._address, int(value))
+        if ok:
+            self._value = value
