@@ -1,7 +1,7 @@
 {
   "domain": "idm_heatpump",
   "name": "iDM Heatpump Navigator 10 (Custom)",
-  "documentation": "https://github.com/youruser/homeassistant-idm-heatpump",
+  "documentation": "https://github.com/youruser/ha-idm-heatpump",
   "requirements": [
     "pymodbus>=2.5.0"
   ],
