@@ -1,6 +1,6 @@
 {
   "domain": "idm_heatpump",
-  "name": "iDM Navigator 2.0 Heat Pump",
+  "name": "iDM Heat Pump with Navigator 10.0",
   "codeowners": ["@ReneMronet"],
   "config_flow": true,
   "dependencies": ["modbus"],
@@ -9,5 +9,5 @@
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/ReneMronet/ha-idm-heatpump/issues",
   "requirements": ["pymodbus>=3.0.0,<4.0.0"],
-  "version": "0.0.6"
+  "version": "0.0.8"
 }
