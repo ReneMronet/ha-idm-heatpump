@@ -25,6 +25,7 @@ This integration allows you to monitor and control your iDM heat pump with Navig
 2. Go to Integrations
 3. Click the three dots in the top right corner and select "Custom repositories"
 4. Add the URL of this repository and select "Integration" as category
+https://github.com/ReneMronet/ha-idm-heatpump/
 5. Click "Add"
 6. Search for "iDM Heat Pump" and install it
 7. Restart Home Assistant
