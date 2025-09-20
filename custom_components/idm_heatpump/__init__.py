@@ -1,33 +1,42 @@
-# custom_components/idm_heatpump/__init__.py
 """
-iDM Heat Pump Integration for Home Assistant
-Custom integration for iDM heat pumps with Navigator 10.0 control via Modbus TCP
+__init__.py – v1.7 (2025-09-18)
+
+Initialisierung der iDM Wärmepumpen Integration.
+- Registriert die unterstützten Plattformen (Sensoren, Selects, Switches)
+- Nutzt async_forward_entry_setups korrekt mit await (HA >= 2025.x)
 """
 
-import logging
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
-from homeassistant.config_entries import ConfigEntry
-from .const import DOMAIN, PLATFORMS
+from homeassistant.const import Platform
+from .const import DOMAIN
 
-async def async_setup(hass: HomeAssistant, config: dict):
+# Liste der Plattformen, die diese Integration bereitstellt
+PLATFORMS: list[Platform] = [
+    Platform.SENSOR,
+    Platform.SELECT,
+    Platform.SWITCH,
+]
+
+
+async def async_setup_entry(hass, entry):
+    """
+    Wird beim Hinzufügen einer neuen iDM Wärmepumpe aufgerufen.
+    Erstellt die Integration und leitet den Config-Entry an die Plattformen weiter.
+    """
     hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN][entry.entry_id] = {"data": entry.data}
+
+    # Plattformen asynchron, aber explizit awaiten → Sensoren/Selects/Switches werden sicher geladen
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
     return True
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
-    hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = {
-        "host": entry.data.get("host"),
-        "port": entry.data.get("port"),
-        "unit": entry.data.get("unit"),
-    }
-    # forward to platforms
-    for platform in PLATFORMS:
-        hass.async_add_job(hass.config_entries.async_forward_entry_setup(entry, platform))
-    return True
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
-    for platform in PLATFORMS:
-        await hass.config_entries.async_forward_entry_unload(entry, platform)
-    hass.data[DOMAIN].pop(entry.entry_id, None)
-    return True
+async def async_unload_entry(hass, entry):
+    """
+    Wird beim Entfernen einer iDM Wärmepumpe aufgerufen.
+    Lädt die Plattformen wieder aus und entfernt die Daten aus hass.data.
+    """
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if unload_ok:
+        hass.data[DOMAIN].pop(entry.entry_id, None)
+    return unload_ok

@@ -1,13 +1,16 @@
 {
   "domain": "idm_heatpump",
-  "name": "iDM Heat Pump with Navigator 10.0",
+  "name": "iDM Wärmepumpe",
   "codeowners": ["@ReneMronet"],
   "config_flow": true,
-  "dependencies": ["modbus"],
+  "after_dependencies": ["modbus"],
+  "dependencies": [],
   "documentation": "https://github.com/ReneMronet/ha-idm-heatpump",
-  "integration_type": "device",
+  "integration_type": "hub",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/ReneMronet/ha-idm-heatpump/issues",
-  "requirements": ["pymodbus>=3.0.0,<4.0.0"],
-  "version": "0.0.8"
+  "requirements": ["pymodbus>=3.8.3"],
+  "translations": "translations",
+  "version": "2025.09.16"
 }
+

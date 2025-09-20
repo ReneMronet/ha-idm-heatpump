@@ -1,33 +1,110 @@
 {
+  "_meta": {
+    "version": "v1.10 (2025-09-19)",
+    "description": "English translations for iDM Heat Pump integration"
+  },
   "config": {
     "step": {
       "user": {
-        "title": "iDM Heat Pump with Navigator 10.0 Setup",
-        "description": "Configure your iDM heat pump with Navigator 10.0 control via Modbus TCP.",
+        "title": "Connect iDM Heat Pump",
+        "description": "Enter the IP address, TCP port, and update interval.",
         "data": {
-          "host": "Host IP Address",
-          "port": "Port (Default: {default_port})",
-          "unit_id": "Modbus Unit ID (Default: {default_unit_id})",
-          "scan_interval": "Polling interval in seconds (Default: {default_scan_interval})"
+          "host": "IP Address",
+          "port": "TCP Port",
+          "update_interval": "Update Interval (seconds)"
         }
       }
     },
     "error": {
-      "cannot_connect": "Failed to connect to the heat pump. Please check IP address and port.",
-      "unknown": "Unexpected error during setup."
+      "cannot_connect": "Failed to connect to iDM Heat Pump. Please check IP/Port."
     },
     "abort": {
-      "already_configured": "Device is already configured"
+      "single_instance_allowed": "The iDM Heat Pump integration is already configured."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "iDM Heat Pump Options",
-        "description": "Configure how often data is retrieved from your heat pump.",
+        "title": "Options for iDM Heat Pump",
+        "description": "Adjust the update interval for querying the heat pump.",
         "data": {
-          "scan_interval": "Polling interval (seconds, 10–300)"
+          "update_interval": "Update Interval (seconds)"
         }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "aussentemperatur": { "name": "Outdoor Temperature" },
+      "aussentemperatur_gemittelt": { "name": "Average Outdoor Temperature" },
+      "waermespeicher": { "name": "Heat Buffer Temperature" },
+      "ww_oben": { "name": "Hot Water Top" },
+      "ww_unten": { "name": "Hot Water Bottom" },
+      "ww_zapftemp": { "name": "Hot Water Tap Temperature" },
+      "luftansaug": { "name": "Air Inlet Temperature" },
+      "solar_kollektor": { "name": "Solar Collector Temperature" },
+      "hka_vorlauf": { "name": "Heating Circuit A Flow Temperature" },
+      "hka_soll_vorlauf": { "name": "Heating Circuit A Target Flow Temperature" },
+      "hkc_vorlauf": { "name": "Heating Circuit C Flow Temperature" },
+      "hkc_soll_vorlauf": { "name": "Heating Circuit C Target Flow Temperature" },
+      "pv_ueberschuss": { "name": "PV Surplus" },
+      "e_heizstab": { "name": "Electric Heater Power" },
+      "pv_produktion": { "name": "PV Production" },
+      "hausverbrauch": { "name": "House Consumption" },
+      "batterie_entladung": { "name": "Battery Discharge" },
+      "batterie_fuellstand": { "name": "Battery State of Charge" },
+      "status_warmepumpe": {
+        "name": "Heat Pump Status",
+        "icon": {
+          "Bereit": "mdi:power-standby",
+          "Heizbetrieb": "mdi:radiator",
+          "Unbekannt": "mdi:alert-circle-outline"
+        }
+      },
+      "hka_aktive_betriebsart": {
+        "name": "Active Mode Heating Circuit A",
+        "icon": {
+          "Aus": "mdi:power-standby",
+          "Heizen": "mdi:radiator",
+          "Kühlen": "mdi:snowflake",
+          "Unbekannt": "mdi:alert-circle-outline"
+        }
+      },
+      "hkc_aktive_betriebsart": {
+        "name": "Active Mode Heating Circuit C",
+        "icon": {
+          "Aus": "mdi:power-standby",
+          "Heizen": "mdi:radiator",
+          "Kühlen": "mdi:snowflake",
+          "Unbekannt": "mdi:alert-circle-outline"
+        }
+      },
+      "wp_power": { "name": "Heat Pump Power Consumption" }
+    },
+    "switch": {
+      "heat_request": { "name": "Heating Request" },
+      "ww_request": { "name": "Hot Water Request" },
+      "ww_onetime": { "name": "One-time Hot Water Charging" }
+    }
+  },
+  "state": {
+    "sensor": {
+      "status_warmepumpe": {
+        "Bereit": "Ready",
+        "Heizbetrieb": "Heating",
+        "Unbekannt": "Unknown"
+      },
+      "hka_aktive_betriebsart": {
+        "Aus": "Off",
+        "Heizen": "Heating",
+        "Kühlen": "Cooling",
+        "Unbekannt": "Unknown"
+      },
+      "hkc_aktive_betriebsart": {
+        "Aus": "Off",
+        "Heizen": "Heating",
+        "Kühlen": "Cooling",
+        "Unbekannt": "Unknown"
       }
     }
   }

@@ -1,68 +1,263 @@
-from datetime import timedelta
-from homeassistant.helpers.entity import Entity
-from homeassistant.const import TEMP_CELSIUS, POWER_KILO_WATT, PERCENTAGE
-from .const import DOMAIN, SCAN_INTERVAL
-from .modbus_handler import ModbusHandler
+"""
+sensor.py – v1.22 (2025-09-19)
 
-SENSORS = [
-    # name, address, unit, type ('float' or 'int')
-    ("idm_aussentemperatur", 1000, TEMP_CELSIUS, 'float'),
-    ("idm_wp_vorlauf", 1050, TEMP_CELSIUS, 'float'),
-    ("idm_wp_ruecklauf", 1052, TEMP_CELSIUS, 'float'),
-    ("idm_ww_oben", 1014, TEMP_CELSIUS, 'float'),
-    ("idm_ww_unten", 1012, TEMP_CELSIUS, 'float'),
-    ("idm_hk_a_vorlauf", 1350, TEMP_CELSIUS, 'float'),
-    ("idm_hk_a_raumtemperatur", 1364, TEMP_CELSIUS, 'float'),
-    ("idm_hk_c_vorlauf", 1354, TEMP_CELSIUS, 'float'),
-    ("idm_hk_c_raumtemperatur", 1368, TEMP_CELSIUS, 'float'),
-    ("idm_pv_ueberschuss", 74, POWER_KILO_WATT, 'float'),
-    ("idm_pv_produktion", 78, POWER_KILO_WATT, 'float'),
-    ("idm_hausverbrauch", 82, POWER_KILO_WATT, 'float'),
-    ("idm_batterie_entladung", 84, POWER_KILO_WATT, 'float'),
-    ("idm_batterie_fuellstand", 86, PERCENTAGE, 'int'),
-    ("idm_thermische_momentanleistung", 1790, POWER_KILO_WATT, 'float'),
-]
+Sensor-Definitionen für iDM Wärmepumpe.
+- Temperaturen (Außen, Speicher, WW, Luft, Solar)
+- Heizkreise A & C (Vorlauf, Soll-Vorlauf, aktive Betriebsart mit Icon)
+- PV- und Batterie-Werte
+- Status Wärmepumpe (Bereit/Heizbetrieb, mit Icon)
+- Leistungsaufnahme Wärmepumpe (Reg. 4122)
+"""
+
+from datetime import timedelta
+from homeassistant.components.sensor import (
+    SensorEntity,
+    SensorDeviceClass,
+    SensorStateClass,
+)
+from homeassistant.const import UnitOfTemperature, UnitOfPower, PERCENTAGE
+from homeassistant.helpers.entity import EntityCategory
+
+from .const import (
+    REG_OUTDOOR_TEMP,
+    REG_OUTDOOR_TEMP_AVG,
+    REG_HEATBUFFER_TEMP,
+    REG_WW_TOP_TEMP,
+    REG_WW_BOTTOM_TEMP,
+    REG_WW_TAP_TEMP,
+    REG_AIR_INLET_TEMP,
+    REG_SOLAR_COLLECTOR_TEMP,
+    REG_HKA_VL,
+    REG_HKA_VL_SOLL,
+    REG_HKC_VL,
+    REG_HKC_VL_SOLL,
+    REG_HKA_ACTIVE_MODE,
+    REG_HKC_ACTIVE_MODE,
+    REG_PV_SURPLUS,
+    REG_EHEIZSTAB,
+    REG_PV_PRODUKTION,
+    REG_HAUSVERBRAUCH,
+    REG_BATTERIE_ENTLADUNG,
+    REG_BATTERIE_FUELLSTAND,
+    REG_WP_STATUS,
+    REG_WP_POWER,
+    CONF_UPDATE_INTERVAL,
+    DEFAULT_UPDATE_INTERVAL,
+)
+from .modbus_handler import IDMModbusHandler
+
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    data = hass.data[DOMAIN][entry.entry_id]
-    handler = ModbusHandler(data['host'], data['port'], data['unit'])
-    handler.connect()
-    entities = []
-    for name, address, unit, dtype in SENSORS:
-        entities.append(IdmSensor(handler, name, address, unit, dtype))
-    async_add_entities(entities, True)
+    """Initialisiert alle Sensor-Entities beim Setup des Integrations-Eintrags."""
+    host = entry.data["host"]
+    port = entry.data.get("port")
 
-class IdmSensor(Entity):
-    def __init__(self, handler, name, address, unit, dtype):
-        self._handler = handler
-        self._name = name
-        self._address = address
-        self._unit = unit
-        self._dtype = dtype
-        self._state = None
+    interval = entry.options.get(
+        CONF_UPDATE_INTERVAL,
+        entry.data.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL),
+    )
+
+    client = IDMModbusHandler(host, port)
+    await client.connect()
+
+    sensors = [
+        # Außentemperaturen
+        IDMHeatpumpFloatSensor("idm_aussentemperatur", "aussentemperatur", REG_OUTDOOR_TEMP,
+                               UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, interval),
+        IDMHeatpumpFloatSensor("idm_aussentemperatur_gemittelt", "aussentemperatur_gemittelt", REG_OUTDOOR_TEMP_AVG,
+                               UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, interval),
+
+        # Wärmespeicher / Warmwasser
+        IDMHeatpumpFloatSensor("idm_waermespeicher", "waermespeicher", REG_HEATBUFFER_TEMP,
+                               UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, interval),
+        IDMHeatpumpFloatSensor("idm_ww_oben", "ww_oben", REG_WW_TOP_TEMP,
+                               UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, interval),
+        IDMHeatpumpFloatSensor("idm_ww_unten", "ww_unten", REG_WW_BOTTOM_TEMP,
+                               UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, interval),
+        IDMHeatpumpFloatSensor("idm_ww_zapftemp", "ww_zapftemp", REG_WW_TAP_TEMP,
+                               UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, interval),
+
+        # Luft & Solar
+        IDMHeatpumpFloatSensor("idm_luftansaug", "luftansaug", REG_AIR_INLET_TEMP,
+                               UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, interval),
+        IDMHeatpumpFloatSensor("idm_solar_kollektor", "solar_kollektor", REG_SOLAR_COLLECTOR_TEMP,
+                               UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, interval),
+
+        # Heizkreis A
+        IDMHeatpumpFloatSensor("idm_hka_vorlauftemperatur", "hka_vorlauf", REG_HKA_VL,
+                               UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, interval),
+        IDMHeatpumpFloatSensor("idm_hka_soll_vorlauf", "hka_soll_vorlauf", REG_HKA_VL_SOLL,
+                               UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, interval),
+        IDMHeatpumpActiveModeSensor("idm_hka_aktive_betriebsart", "hka_aktive_betriebsart",
+                                    REG_HKA_ACTIVE_MODE, client, host, interval),
+
+        # Heizkreis C
+        IDMHeatpumpFloatSensor("idm_hkc_vorlauftemperatur", "hkc_vorlauf", REG_HKC_VL,
+                               UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, interval),
+        IDMHeatpumpFloatSensor("idm_hkc_soll_vorlauf", "hkc_soll_vorlauf", REG_HKC_VL_SOLL,
+                               UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, interval),
+        IDMHeatpumpActiveModeSensor("idm_hkc_aktive_betriebsart", "hkc_aktive_betriebsart",
+                                    REG_HKC_ACTIVE_MODE, client, host, interval),
+
+        # PV & Batterie
+        IDMHeatpumpFloatSensor("idm_pv_ueberschuss", "pv_ueberschuss", REG_PV_SURPLUS,
+                               UnitOfPower.KILO_WATT, client, host, SensorDeviceClass.POWER, interval),
+        IDMHeatpumpFloatSensor("idm_e_heizstab", "e_heizstab", REG_EHEIZSTAB,
+                               UnitOfPower.KILO_WATT, client, host, SensorDeviceClass.POWER, interval),
+        IDMHeatpumpFloatSensor("idm_pv_produktion", "pv_produktion", REG_PV_PRODUKTION,
+                               UnitOfPower.KILO_WATT, client, host, SensorDeviceClass.POWER, interval),
+        IDMHeatpumpFloatSensor("idm_hausverbrauch", "hausverbrauch", REG_HAUSVERBRAUCH,
+                               UnitOfPower.KILO_WATT, client, host, SensorDeviceClass.POWER, interval),
+        IDMHeatpumpFloatSensor("idm_batterie_entladung", "batterie_entladung", REG_BATTERIE_ENTLADUNG,
+                               UnitOfPower.KILO_WATT, client, host, SensorDeviceClass.POWER, interval),
+
+        IDMHeatpumpWordSensor("idm_batterie_fuellstand", "batterie_fuellstand", REG_BATTERIE_FUELLSTAND,
+                              PERCENTAGE, client, host, interval,
+                              entity_category=EntityCategory.DIAGNOSTIC),
+
+        # Status Wärmepumpe
+        IDMHeatpumpStatusSensor("idm_status_warmepumpe", "status_warmepumpe", REG_WP_STATUS,
+                                client, host, interval),
+
+        # Leistungsaufnahme Wärmepumpe
+        IDMHeatpumpFloatSensor("idm_wp_power", "wp_power", REG_WP_POWER,
+                               UnitOfPower.KILO_WATT, client, host, SensorDeviceClass.POWER, interval),
+    ]
+
+    async_add_entities(sensors)
+
+
+# -------------------------------------------------------------------
+# Basisklasse für gemeinsame Device-Infos
+# -------------------------------------------------------------------
+class IDMBaseEntity:
+    def __init__(self, host: str):
+        self._host = host
 
     @property
-    def name(self):
-        return self._name
+    def device_info(self):
+        return {
+            "identifiers": {("idm_heatpump", "idm_system")},
+            "name": "iDM Wärmepumpe",
+            "manufacturer": "iDM Energiesysteme",
+            "model": "AERO ALM 4–12",
+            "configuration_url": f"http://{self._host}",
+        }
 
-    @property
-    def unique_id(self):
-        return f"{self._name}"
 
-    @property
-    def unit_of_measurement(self):
-        return self._unit
-
-    @property
-    def state(self):
-        return self._state
+# -------------------------------------------------------------------
+# Standard-Sensoren (Float-Werte)
+# -------------------------------------------------------------------
+class IDMHeatpumpFloatSensor(IDMBaseEntity, SensorEntity):
+    def __init__(self, unique_id, translation_key, register, unit, client, host,
+                 device_class=None, interval=30, entity_category=None):
+        super().__init__(host)
+        self._attr_unique_id = unique_id
+        self._attr_translation_key = translation_key
+        self._attr_has_entity_name = True
+        self._register = register
+        self._attr_native_unit_of_measurement = unit
+        self._client = client
+        self._attr_native_value = None
+        self._attr_device_class = device_class
+        self._attr_state_class = SensorStateClass.MEASUREMENT
+        self._attr_scan_interval = timedelta(seconds=interval)
+        self._attr_entity_category = entity_category
 
     async def async_update(self):
-        try:
-            if self._dtype == 'float':
-                val = self._handler.read_float(self._address)
-            else:
-                val = self._handler.read_int(self._address)
-            self._state = val
-        except Exception:
-            self._state = None
+        value = await self._client.read_float(self._register)
+        if value is not None:
+            self._attr_native_value = value
+
+
+# -------------------------------------------------------------------
+# Word-Sensor (z. B. Batterie-Füllstand)
+# -------------------------------------------------------------------
+class IDMHeatpumpWordSensor(IDMBaseEntity, SensorEntity):
+    def __init__(self, unique_id, translation_key, register, unit, client, host, interval=30,
+                 entity_category=None):
+        super().__init__(host)
+        self._attr_unique_id = unique_id
+        self._attr_translation_key = translation_key
+        self._attr_has_entity_name = True
+        self._register = register
+        self._attr_native_unit_of_measurement = unit
+        self._client = client
+        self._attr_native_value = None
+        self._attr_device_class = None
+        self._attr_state_class = SensorStateClass.MEASUREMENT
+        self._attr_scan_interval = timedelta(seconds=interval)
+        self._attr_entity_category = entity_category
+
+    async def async_update(self):
+        value = await self._client.read_word(self._register)
+        if value is not None:
+            self._attr_native_value = value
+
+
+# -------------------------------------------------------------------
+# Status-Sensor Wärmepumpe (Bereit / Heizbetrieb)
+# -------------------------------------------------------------------
+class IDMHeatpumpStatusSensor(IDMBaseEntity, SensorEntity):
+    def __init__(self, unique_id, translation_key, register, client, host, interval=30):
+        super().__init__(host)
+        self._attr_unique_id = unique_id
+        self._attr_translation_key = translation_key
+        self._attr_has_entity_name = True
+        self._register = register
+        self._client = client
+        self._attr_native_value = None
+        self._attr_scan_interval = timedelta(seconds=interval)
+
+    async def async_update(self):
+        value = await self._client.read_uchar(self._register)
+        if value == 0:
+            self._attr_native_value = "Bereit"
+        elif value == 1:
+            self._attr_native_value = "Heizbetrieb"
+        else:
+            self._attr_native_value = "Unbekannt"
+
+    @property
+    def icon(self):
+        if self._attr_native_value == "Bereit":
+            return "mdi:power-standby"
+        elif self._attr_native_value == "Heizbetrieb":
+            return "mdi:radiator"
+        return "mdi:alert-circle-outline"
+
+
+# -------------------------------------------------------------------
+# Aktive Betriebsart Heizkreis A/C
+# -------------------------------------------------------------------
+class IDMHeatpumpActiveModeSensor(IDMBaseEntity, SensorEntity):
+    def __init__(self, unique_id, translation_key, register, client, host, interval=30):
+        super().__init__(host)
+        self._attr_unique_id = unique_id
+        self._attr_translation_key = translation_key
+        self._attr_has_entity_name = True
+        self._register = register
+        self._client = client
+        self._attr_native_value = None
+        self._attr_scan_interval = timedelta(seconds=interval)
+
+    async def async_update(self):
+        value = await self._client.read_uchar(self._register)
+        if value == 0:
+            self._attr_native_value = "Aus"
+        elif value == 1:
+            self._attr_native_value = "Heizen"
+        elif value == 2:
+            self._attr_native_value = "Kühlen"
+        else:
+            self._attr_native_value = "Unbekannt"
+
+    @property
+    def icon(self):
+        if self._attr_native_value == "Aus":
+            return "mdi:power-standby"
+        elif self._attr_native_value == "Heizen":
+            return "mdi:radiator"
+        elif self._attr_native_value == "Kühlen":
+            return "mdi:snowflake"
+        return "mdi:alert-circle-outline"

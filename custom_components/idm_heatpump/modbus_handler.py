@@ -1,58 +1,104 @@
-import asyncio
-from pymodbus.client.sync import ModbusTcpClient
-from pymodbus.payload import BinaryPayloadDecoder
-from pymodbus.constants import Endian
+"""
+modbus_handler.py – v2.5 (2025-09-17)
+
+Funktionen für die Kommunikation mit der iDM Wärmepumpe über Modbus TCP.
+- Unterstützt: FLOAT (32-bit, Little Endian), WORD (16-bit), UCHAR (Low-Byte)
+- Nutzt pymodbus AsyncModbusTcpClient
+"""
+
 import logging
+import struct
+from pymodbus.client import AsyncModbusTcpClient
+from .const import DEFAULT_PORT
 
 _LOGGER = logging.getLogger(__name__)
 
-class ModbusHandler:
-    def __init__(self, host, port=502, unit=1):
-        self.host = host
-        self.port = port
-        self.unit = unit
-        self._client = None
 
-    def connect(self):
-        if self._client is None:
-            self._client = ModbusTcpClient(host=self.host, port=self.port)
-            self._client.connect()
-        return self._client
+class IDMModbusHandler:
+    """
+    Kapselt die Modbus-Kommunikation.
+    Bietet Methoden zum Lesen von FLOAT, WORD und UCHAR-Registern.
+    """
 
-    def close(self):
-        if self._client:
-            try:
-                self._client.close()
-            except Exception:
-                pass
-            self._client = None
+    def __init__(self, host: str, port: int = DEFAULT_PORT):
+        """
+        Initialisiert den Modbus-Handler.
+        :param host: IP-Adresse der Wärmepumpe
+        :param port: TCP-Port (Standard: 502)
+        """
+        self._host = host
+        self._port = port
+        self._client = AsyncModbusTcpClient(host, port=port)
+        _LOGGER.info("iDM Modbus TCP Client für %s:%s erstellt", host, port)
 
-    def read_float(self, address):
-        # read 2 registers (32bit float)
+    async def connect(self):
+        """Verbindet den Modbus-Client mit der Wärmepumpe."""
+        await self._client.connect()
+        _LOGGER.info("iDM Modbus TCP verbunden mit %s:%s", self._host, self._port)
+
+    async def close(self):
+        """Schließt die Modbus-Verbindung."""
+        await self._client.close()
+
+    async def read_float(self, address: int):
+        """
+        Liest einen 32-bit FLOAT-Wert (bestehend aus 2 Registern).
+        Versucht zuerst Input Register, bei Fehlern Holding Register.
+        Rückgabe: float oder None
+        """
         try:
-            rr = self._client.read_holding_registers(address, 2, unit=self.unit)
-            if not rr or rr.isError():
+            rr = await self._client.read_input_registers(address=address, count=2)
+            if rr is None or rr.isError():
+                rr = await self._client.read_holding_registers(address=address, count=2)
+
+            if rr is None or rr.isError():
+                _LOGGER.error("Fehler beim Lesen von FLOAT Register %s", address)
                 return None
-            decoder = BinaryPayloadDecoder.fromRegisters(rr.registers, byteorder=Endian.Big, wordorder=Endian.Big)
-            return round(decoder.decode_32bit_float(), 2)
+
+            regs = rr.registers
+            try:
+                # Little Endian (Reg_L zuerst, dann Reg_H)
+                raw = struct.pack("<HH", regs[0], regs[1])
+                value = struct.unpack("<f", raw)[0]
+                if -1000 < value < 1000:   # Plausibilitätsprüfung
+                    return round(value, 2)
+                else:
+                    _LOGGER.warning("Unplausibler Wert bei FLOAT Reg %s: %s", address, value)
+                    return 0.0
+            except Exception as e:
+                _LOGGER.error("Decode-Fehler FLOAT Reg %s: %s", address, e)
+                return None
+
         except Exception as e:
-            _LOGGER.debug("read_float error %s", e)
+            _LOGGER.error("Exception beim Lesen von FLOAT Register %s: %s", address, e)
             return None
 
-    def read_int(self, address):
+    async def read_word(self, address: int):
+        """
+        Liest ein 16-bit WORD (z. B. Prozentwerte).
+        Rückgabe: int oder None
+        """
         try:
-            rr = self._client.read_holding_registers(address, 1, unit=self.unit)
-            if not rr or rr.isError():
+            rr = await self._client.read_holding_registers(address=address, count=1)
+            if rr is None or rr.isError():
+                _LOGGER.error("Fehler beim Lesen von WORD Register %s", address)
                 return None
             return rr.registers[0]
         except Exception as e:
-            _LOGGER.debug("read_int error %s", e)
+            _LOGGER.error("Exception beim Lesen von WORD Register %s: %s", address, e)
             return None
 
-    def write_int(self, address, value):
+    async def read_uchar(self, address: int):
+        """
+        Liest ein 8-bit Unsigned Integer (Low-Byte eines WORD).
+        Rückgabe: int oder None
+        """
         try:
-            rr = self._client.write_register(address, int(value), unit=self.unit)
-            return not rr.isError()
+            rr = await self._client.read_holding_registers(address=address, count=1)
+            if rr is None or rr.isError():
+                _LOGGER.error("Fehler beim Lesen von UCHAR Register %s", address)
+                return None
+            return rr.registers[0] & 0xFF
         except Exception as e:
-            _LOGGER.debug("write_int error %s", e)
-            return False
+            _LOGGER.error("Exception beim Lesen von UCHAR Register %s: %s", address, e)
+            return None

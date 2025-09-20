@@ -1,33 +1,110 @@
 {
+  "_meta": {
+    "version": "v1.10 (2025-09-19)",
+    "description": "Deutsche Übersetzungen für iDM Wärmepumpe Integration"
+  },
   "config": {
     "step": {
       "user": {
-        "title": "iDM Wärmepumpe mit Navigator 2.0 Einrichtung",
-        "description": "Konfigurieren Sie Ihre iDM Wärmepumpe mit Navigator 10.0 Steuerung über Modbus TCP.",
+        "title": "iDM Wärmepumpe verbinden",
+        "description": "Gib die IP-Adresse, den TCP-Port und das Update-Intervall ein.",
         "data": {
-          "host": "Host IP-Adresse",
-          "port": "Port (Standard: {default_port})",
-          "unit_id": "Modbus Unit ID (Standard: {default_unit_id})",
-          "scan_interval": "Abfrageintervall in Sekunden (Standard: {default_scan_interval})"
+          "host": "IP-Adresse",
+          "port": "TCP-Port",
+          "update_interval": "Update-Intervall (Sekunden)"
         }
       }
     },
     "error": {
-      "cannot_connect": "Verbindung zur Wärmepumpe fehlgeschlagen. Bitte überprüfen Sie IP-Adresse und Port.",
-      "unknown": "Unerwarteter Fehler während der Einrichtung."
+      "cannot_connect": "Verbindung zur iDM Wärmepumpe fehlgeschlagen. Bitte IP/Port prüfen."
     },
     "abort": {
-      "already_configured": "Gerät ist bereits konfiguriert"
+      "single_instance_allowed": "Die iDM Wärmepumpe-Integration ist bereits eingerichtet."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "iDM Wärmepumpe Optionen",
-        "description": "Konfigurieren Sie, wie oft Daten von Ihrer Wärmepumpe abgerufen werden.",
+        "title": "Optionen für iDM Wärmepumpe",
+        "description": "Passe das Update-Intervall für die Abfrage der Wärmepumpe an.",
         "data": {
-          "scan_interval": "Abfrageintervall (Sekunden, 10-300)"
+          "update_interval": "Update-Intervall (Sekunden)"
         }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "aussentemperatur": { "name": "Außentemperatur" },
+      "aussentemperatur_gemittelt": { "name": "Gemittelte Außentemperatur" },
+      "waermespeicher": { "name": "Wärmespeichertemperatur" },
+      "ww_oben": { "name": "Warmwasser oben" },
+      "ww_unten": { "name": "Warmwasser unten" },
+      "ww_zapftemp": { "name": "Warmwasserzapftemperatur" },
+      "luftansaug": { "name": "Luftansaugtemperatur" },
+      "solar_kollektor": { "name": "Solarkollektortemperatur" },
+      "hka_vorlauf": { "name": "Heizkreis A Vorlauftemperatur" },
+      "hka_soll_vorlauf": { "name": "Heizkreis A Soll-Vorlauftemperatur" },
+      "hkc_vorlauf": { "name": "Heizkreis C Vorlauftemperatur" },
+      "hkc_soll_vorlauf": { "name": "Heizkreis C Soll-Vorlauftemperatur" },
+      "pv_ueberschuss": { "name": "PV-Überschuss" },
+      "e_heizstab": { "name": "Leistung E-Heizstab" },
+      "pv_produktion": { "name": "PV-Produktion" },
+      "hausverbrauch": { "name": "Hausverbrauch" },
+      "batterie_entladung": { "name": "Batterieentladung" },
+      "batterie_fuellstand": { "name": "Batteriefüllstand" },
+      "status_warmepumpe": {
+        "name": "Status Wärmepumpe",
+        "icon": {
+          "Bereit": "mdi:power-standby",
+          "Heizbetrieb": "mdi:radiator",
+          "Unbekannt": "mdi:alert-circle-outline"
+        }
+      },
+      "hka_aktive_betriebsart": {
+        "name": "Aktive Betriebsart Heizkreis A",
+        "icon": {
+          "Aus": "mdi:power-standby",
+          "Heizen": "mdi:radiator",
+          "Kühlen": "mdi:snowflake",
+          "Unbekannt": "mdi:alert-circle-outline"
+        }
+      },
+      "hkc_aktive_betriebsart": {
+        "name": "Aktive Betriebsart Heizkreis C",
+        "icon": {
+          "Aus": "mdi:power-standby",
+          "Heizen": "mdi:radiator",
+          "Kühlen": "mdi:snowflake",
+          "Unbekannt": "mdi:alert-circle-outline"
+        }
+      },
+      "wp_power": { "name": "Leistungsaufnahme Wärmepumpe" }
+    },
+    "switch": {
+      "heat_request": { "name": "Heizungsanforderung" },
+      "ww_request": { "name": "Warmwasseranforderung" },
+      "ww_onetime": { "name": "Einmalige Warmwasserladung" }
+    }
+  },
+  "state": {
+    "sensor": {
+      "status_warmepumpe": {
+        "Bereit": "Bereit",
+        "Heizbetrieb": "Heizbetrieb",
+        "Unbekannt": "Unbekannt"
+      },
+      "hka_aktive_betriebsart": {
+        "Aus": "Aus",
+        "Heizen": "Heizen",
+        "Kühlen": "Kühlen",
+        "Unbekannt": "Unbekannt"
+      },
+      "hkc_aktive_betriebsart": {
+        "Aus": "Aus",
+        "Heizen": "Heizen",
+        "Kühlen": "Kühlen",
+        "Unbekannt": "Unbekannt"
       }
     }
   }
