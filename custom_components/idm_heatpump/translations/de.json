@@ -1,8 +1,4 @@
 {
-  "_meta": {
-    "version": "v1.10 (2025-09-19)",
-    "description": "Deutsche Übersetzungen für iDM Wärmepumpe Integration"
-  },
   "config": {
     "step": {
       "user": {
@@ -53,59 +49,15 @@
       "hausverbrauch": { "name": "Hausverbrauch" },
       "batterie_entladung": { "name": "Batterieentladung" },
       "batterie_fuellstand": { "name": "Batteriefüllstand" },
-      "status_warmepumpe": {
-        "name": "Status Wärmepumpe",
-        "icon": {
-          "Bereit": "mdi:power-standby",
-          "Heizbetrieb": "mdi:radiator",
-          "Unbekannt": "mdi:alert-circle-outline"
-        }
-      },
-      "hka_aktive_betriebsart": {
-        "name": "Aktive Betriebsart Heizkreis A",
-        "icon": {
-          "Aus": "mdi:power-standby",
-          "Heizen": "mdi:radiator",
-          "Kühlen": "mdi:snowflake",
-          "Unbekannt": "mdi:alert-circle-outline"
-        }
-      },
-      "hkc_aktive_betriebsart": {
-        "name": "Aktive Betriebsart Heizkreis C",
-        "icon": {
-          "Aus": "mdi:power-standby",
-          "Heizen": "mdi:radiator",
-          "Kühlen": "mdi:snowflake",
-          "Unbekannt": "mdi:alert-circle-outline"
-        }
-      },
+      "status_warmepumpe": { "name": "Status Wärmepumpe" },
+      "hka_aktive_betriebsart": { "name": "Aktive Betriebsart Heizkreis A" },
+      "hkc_aktive_betriebsart": { "name": "Aktive Betriebsart Heizkreis C" },
       "wp_power": { "name": "Leistungsaufnahme Wärmepumpe" }
     },
     "switch": {
       "heat_request": { "name": "Heizungsanforderung" },
       "ww_request": { "name": "Warmwasseranforderung" },
       "ww_onetime": { "name": "Einmalige Warmwasserladung" }
-    }
-  },
-  "state": {
-    "sensor": {
-      "status_warmepumpe": {
-        "Bereit": "Bereit",
-        "Heizbetrieb": "Heizbetrieb",
-        "Unbekannt": "Unbekannt"
-      },
-      "hka_aktive_betriebsart": {
-        "Aus": "Aus",
-        "Heizen": "Heizen",
-        "Kühlen": "Kühlen",
-        "Unbekannt": "Unbekannt"
-      },
-      "hkc_aktive_betriebsart": {
-        "Aus": "Aus",
-        "Heizen": "Heizen",
-        "Kühlen": "Kühlen",
-        "Unbekannt": "Unbekannt"
-      }
     }
   }
 }

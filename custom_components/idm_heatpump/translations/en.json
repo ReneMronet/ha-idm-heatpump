@@ -1,8 +1,4 @@
 {
-  "_meta": {
-    "version": "v1.10 (2025-09-19)",
-    "description": "English translations for iDM Heat Pump integration"
-  },
   "config": {
     "step": {
       "user": {
@@ -53,59 +49,15 @@
       "hausverbrauch": { "name": "House Consumption" },
       "batterie_entladung": { "name": "Battery Discharge" },
       "batterie_fuellstand": { "name": "Battery State of Charge" },
-      "status_warmepumpe": {
-        "name": "Heat Pump Status",
-        "icon": {
-          "Bereit": "mdi:power-standby",
-          "Heizbetrieb": "mdi:radiator",
-          "Unbekannt": "mdi:alert-circle-outline"
-        }
-      },
-      "hka_aktive_betriebsart": {
-        "name": "Active Mode Heating Circuit A",
-        "icon": {
-          "Aus": "mdi:power-standby",
-          "Heizen": "mdi:radiator",
-          "Kühlen": "mdi:snowflake",
-          "Unbekannt": "mdi:alert-circle-outline"
-        }
-      },
-      "hkc_aktive_betriebsart": {
-        "name": "Active Mode Heating Circuit C",
-        "icon": {
-          "Aus": "mdi:power-standby",
-          "Heizen": "mdi:radiator",
-          "Kühlen": "mdi:snowflake",
-          "Unbekannt": "mdi:alert-circle-outline"
-        }
-      },
+      "status_warmepumpe": { "name": "Heat Pump Status" },
+      "hka_aktive_betriebsart": { "name": "Active Mode Heating Circuit A" },
+      "hkc_aktive_betriebsart": { "name": "Active Mode Heating Circuit C" },
       "wp_power": { "name": "Heat Pump Power Consumption" }
     },
     "switch": {
       "heat_request": { "name": "Heating Request" },
       "ww_request": { "name": "Hot Water Request" },
       "ww_onetime": { "name": "One-time Hot Water Charging" }
-    }
-  },
-  "state": {
-    "sensor": {
-      "status_warmepumpe": {
-        "Bereit": "Ready",
-        "Heizbetrieb": "Heating",
-        "Unbekannt": "Unknown"
-      },
-      "hka_aktive_betriebsart": {
-        "Aus": "Off",
-        "Heizen": "Heating",
-        "Kühlen": "Cooling",
-        "Unbekannt": "Unknown"
-      },
-      "hkc_aktive_betriebsart": {
-        "Aus": "Off",
-        "Heizen": "Heating",
-        "Kühlen": "Cooling",
-        "Unbekannt": "Unknown"
-      }
     }
   }
 }
