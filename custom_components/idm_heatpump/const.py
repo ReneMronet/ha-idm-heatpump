@@ -1,5 +1,5 @@
 """
-const.py – v2.10 (2025-09-18)
+const.py – v2.11 (2025-09-21)
 
 Konstanten für iDM Wärmepumpen Integration
 """
@@ -15,47 +15,53 @@ DEFAULT_UPDATE_INTERVAL = 30
 # -------------------------------------------------------------------
 
 # System
-REG_SYSTEM_MODE = 1005      # Betriebsart System (UCHAR RW) 0=Standby,1=Automatik,2=Abwesend,4=Nur WW,5=Nur Heizen/Kühlen
-REG_WP_STATUS = 1091        # Heizanforderung Wärmepumpe (UCHAR RO) 0=Bereit,1=Heizbetrieb
+REG_SYSTEM_MODE = 1005      # (SYSMODE) Betriebsart System (UCHAR RW)
+REG_WP_STATUS = 1091        # (B19) Heizanforderung Wärmepumpe (UCHAR RO) 0=Bereit,1=Heizbetrieb
 
 # Temperaturen
-REG_OUTDOOR_TEMP = 1000     # Außentemperatur (FLOAT RO) [°C]
-REG_OUTDOOR_TEMP_AVG = 1002 # Gemittelte Außentemperatur (FLOAT RO) [°C]
-REG_HEATBUFFER_TEMP = 1008  # Wärmespeichertemperatur (FLOAT RO) [°C]
-REG_WW_BOTTOM_TEMP = 1012   # Warmwasser unten (FLOAT RO) [°C]
-REG_WW_TOP_TEMP = 1014      # Warmwasser oben (FLOAT RO) [°C]
-REG_WW_TAP_TEMP = 1030      # Warmwasser-Zapftemperatur (FLOAT RO) [°C]
-REG_AIR_INLET_TEMP = 1060   # Luftansaugtemperatur (FLOAT RO) [°C]
-REG_SOLAR_COLLECTOR_TEMP = 1850  # Solarkollektortemperatur (FLOAT RO) [°C]
+REG_OUTDOOR_TEMP = 1000     # (B32) Außentemperatur [°C]
+REG_OUTDOOR_TEMP_AVG = 1002 # (B32a) Gemittelte Außentemperatur [°C]
+REG_HEATBUFFER_TEMP = 1008  # (B41) Wärmespeichertemperatur [°C]
+REG_WW_BOTTOM_TEMP = 1012   # (B44) Warmwasser unten [°C]
+REG_WW_TOP_TEMP = 1014      # (B43) Warmwasser oben [°C]
+REG_WW_TAP_TEMP = 1030      # (B46) Warmwasser-Zapftemperatur [°C]
+REG_AIR_INLET_TEMP = 1060   # (B37) Luftansaugtemperatur [°C]
+REG_SOLAR_COLLECTOR_TEMP = 1850  # (B61) Solarkollektortemperatur [°C]
+
+# NEU (vom User angefordert)
+REG_WP_VL_TEMP = 1050       # (B33) Wärmepumpenvorlauftemperatur [°C]
+REG_RETURN_TEMP = 1052      # (B34) Rücklauffühler [°C]
+REG_LOAD_TEMP = 1066        # (B45) Ladefühler [°C]
+REG_FLOW_SENSOR = 1072      # (B2) Durchfluss Heizung [l/min]
 
 # Heizkreise (Vorlauf & Soll-Vorlauf)
-REG_HKA_VL = 1350           # Heizkreis A Vorlauftemperatur (FLOAT RO) [°C]
-REG_HKA_VL_SOLL = 1378      # Heizkreis A Soll-Vorlauftemperatur (FLOAT RO) [°C]
-REG_HKC_VL = 1354           # Heizkreis C Vorlauftemperatur (FLOAT RO) [°C]
-REG_HKC_VL_SOLL = 1382      # Heizkreis C Soll-Vorlauftemperatur (FLOAT RO) [°C]
+REG_HKA_VL = 1350           # (B49) Heizkreis A Vorlauftemperatur [°C]
+REG_HKA_VL_SOLL = 1378      # (B49s) Heizkreis A Soll-Vorlauftemperatur [°C]
+REG_HKC_VL = 1354           # (B59) Heizkreis C Vorlauftemperatur [°C]
+REG_HKC_VL_SOLL = 1382      # (B59s) Heizkreis C Soll-Vorlauftemperatur [°C]
 
 # Heizkreise (eingestellte Betriebsarten)
-REG_HKA_MODE = 1393         # Betriebsart Heizkreis A (UCHAR RW)
-REG_HKC_MODE = 1395         # Betriebsart Heizkreis C (UCHAR RW)
+REG_HKA_MODE = 1393         # (HKAMODE) Betriebsart Heizkreis A (UCHAR RW)
+REG_HKC_MODE = 1395         # (HKCMODE) Betriebsart Heizkreis C (UCHAR RW)
 
 # Heizkreise (aktive Betriebsarten)
-REG_HKA_ACTIVE_MODE = 1498  # Aktive Betriebsart Heizkreis A (UCHAR RO)
-REG_HKC_ACTIVE_MODE = 1500  # Aktive Betriebsart Heizkreis C (UCHAR RO)
+REG_HKA_ACTIVE_MODE = 1498  # (B55) Aktive Betriebsart Heizkreis A (UCHAR RO)
+REG_HKC_ACTIVE_MODE = 1500  # (B65) Aktive Betriebsart Heizkreis C (UCHAR RO)
 
 # Warmwasser
-REG_WW_REQUEST = 1712       # Anforderung Warmwasserladung (BOOL RW) 0=Aus,1=Ein
-REG_WW_ONETIME = 1713       # Einmalige Warmwasserladung (BOOL RW) 0=Aus,1=Ein
+REG_WW_REQUEST = 1712       # (WWREQ) Anforderung Warmwasserladung (BOOL RW)
+REG_WW_ONETIME = 1713       # (WWONCE) Einmalige Warmwasserladung (BOOL RW)
 
 # Heizen
-REG_HEAT_REQUEST = 1710     # Anforderung Heizen (BOOL RW) 0=Aus,1=Ein
+REG_HEAT_REQUEST = 1710     # (HEATREQ) Anforderung Heizen (BOOL RW)
 
 # Leistung Wärmepumpe
-REG_WP_POWER = 4122         # Elektrische Gesamtleistung Wärmepumpe (FLOAT RO) [kW]
+REG_WP_POWER = 4122         # (B90) Elektrische Gesamtleistung Wärmepumpe [kW]
 
 # PV / Batterie
-REG_PV_SURPLUS = 74         # Aktueller PV-Überschuss (FLOAT RW/RO) [kW]
-REG_EHEIZSTAB = 76          # Leistung E-Heizstab (FLOAT RW/RO) [kW]
-REG_PV_PRODUKTION = 78      # Aktuelle PV-Produktion (FLOAT RW/RO) [kW]
-REG_HAUSVERBRAUCH = 82      # Hausverbrauch (FLOAT RW/RO) [kW]
-REG_BATTERIE_ENTLADUNG = 84 # Batterieentladung (FLOAT RW/RO) [kW]
-REG_BATTERIE_FUELLSTAND = 86# Batteriefüllstand (WORD RW/RO) [%]
+REG_PV_SURPLUS = 74         # (PV74) Aktueller PV-Überschuss [kW]
+REG_EHEIZSTAB = 76          # (PV76) Leistung E-Heizstab [kW]
+REG_PV_PRODUKTION = 78      # (PV78) Aktuelle PV-Produktion [kW]
+REG_HAUSVERBRAUCH = 82      # (PV82) Hausverbrauch [kW]
+REG_BATTERIE_ENTLADUNG = 84 # (PV84) Batterieentladung [kW]
+REG_BATTERIE_FUELLSTAND = 86# (PV86) Batteriefüllstand [%]

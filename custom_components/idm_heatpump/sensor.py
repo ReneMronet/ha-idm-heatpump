@@ -1,8 +1,9 @@
 """
-sensor.py – v1.22 (2025-09-19)
+sensor.py – v1.23 (2025-09-21)
 
 Sensor-Definitionen für iDM Wärmepumpe.
 - Temperaturen (Außen, Speicher, WW, Luft, Solar)
+- Wärmepumpe Vorlauf, Rücklauf, Ladefühler, Durchfluss
 - Heizkreise A & C (Vorlauf, Soll-Vorlauf, aktive Betriebsart mit Icon)
 - PV- und Batterie-Werte
 - Status Wärmepumpe (Bereit/Heizbetrieb, mit Icon)
@@ -27,6 +28,10 @@ from .const import (
     REG_WW_TAP_TEMP,
     REG_AIR_INLET_TEMP,
     REG_SOLAR_COLLECTOR_TEMP,
+    REG_WP_VL_TEMP,
+    REG_RETURN_TEMP,
+    REG_LOAD_TEMP,
+    REG_FLOW_SENSOR,
     REG_HKA_VL,
     REG_HKA_VL_SOLL,
     REG_HKC_VL,
@@ -66,6 +71,16 @@ async def async_setup_entry(hass, entry, async_add_entities):
                                UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, interval),
         IDMHeatpumpFloatSensor("idm_aussentemperatur_gemittelt", "aussentemperatur_gemittelt", REG_OUTDOOR_TEMP_AVG,
                                UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, interval),
+
+        # Wärmepumpe direkt
+        IDMHeatpumpFloatSensor("idm_wp_vorlauf", "wp_vorlauf", REG_WP_VL_TEMP,
+                               UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, interval),
+        IDMHeatpumpFloatSensor("idm_ruecklauf", "ruecklauf", REG_RETURN_TEMP,
+                               UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, interval),
+        IDMHeatpumpFloatSensor("idm_ladefuehler", "ladefuehler", REG_LOAD_TEMP,
+                               UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, interval),
+        IDMHeatpumpFloatSensor("idm_durchfluss", "durchfluss", REG_FLOW_SENSOR,
+                               "l/min", client, host, None, interval),
 
         # Wärmespeicher / Warmwasser
         IDMHeatpumpFloatSensor("idm_waermespeicher", "waermespeicher", REG_HEATBUFFER_TEMP,
