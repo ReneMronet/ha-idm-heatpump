@@ -1,5 +1,5 @@
 """
-modbus_handler.py – v2.7 (2025-09-22)
+modbus_handler.py – v2.8 (2025-09-22)
 
 Funktionen für die Kommunikation mit der iDM Wärmepumpe über Modbus TCP.
 - Unterstützt: FLOAT (32-bit, Little Endian), WORD (16-bit), UCHAR (Low-Byte)
@@ -30,12 +30,12 @@ class IDMModbusHandler:
     async def close(self):
         await self._client.close()
 
+    # ------------------------------------------------------------------
+    # Lesen
+    # ------------------------------------------------------------------
+
     async def read_float(self, address: int):
-        """
-        Liest einen 32-bit FLOAT-Wert (bestehend aus 2 Registern).
-        Versucht zuerst Input Register, bei Fehlern Holding Register.
-        Rückgabe: float oder None
-        """
+        """Liest einen 32-bit FLOAT-Wert (bestehend aus 2 Registern)."""
         try:
             rr = await self._client.read_input_registers(address=address, count=2)
             if rr is None or rr.isError():
@@ -75,9 +75,32 @@ class IDMModbusHandler:
             _LOGGER.error("Exception UCHAR Reg %s: %s", address, e)
             return None
 
+    # ------------------------------------------------------------------
+    # Schreiben
+    # ------------------------------------------------------------------
+
+    async def write_float(self, address: int, value: float):
+        """Schreibt einen 32-bit FLOAT-Wert (2 Register)."""
+        try:
+            raw = struct.pack("<f", float(value))
+            regs = struct.unpack("<HH", raw)
+            await self._client.write_registers(address=address, values=list(regs))
+            _LOGGER.debug("Wrote FLOAT %.2f to Reg %s", value, address)
+        except Exception as e:
+            _LOGGER.error("Exception WRITE FLOAT Reg %s: %s", address, e)
+
+    async def write_word(self, address: int, value: int):
+        """Schreibt ein 16-bit WORD."""
+        try:
+            await self._client.write_register(address=address, value=int(value))
+            _LOGGER.debug("Wrote WORD %d to Reg %s", value, address)
+        except Exception as e:
+            _LOGGER.error("Exception WRITE WORD Reg %s: %s", address, e)
+
     async def write_uchar(self, address: int, value: int):
         """Schreibt ein 8-bit Unsigned Integer (als WORD)."""
         try:
-            await self._client.write_register(address=address, value=value)
+            await self._client.write_register(address=address, value=int(value) & 0xFF)
+            _LOGGER.debug("Wrote UCHAR %d to Reg %s", value, address)
         except Exception as e:
             _LOGGER.error("Exception WRITE UCHAR Reg %s: %s", address, e)

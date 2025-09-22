@@ -68,6 +68,12 @@
       "heat_request": { "name": "Heizungsanforderung" },
       "ww_request": { "name": "Warmwasseranforderung" },
       "ww_onetime": { "name": "Einmalige Warmwasserladung" }
+    },
+    "number": {
+      "hka_temp_normal": { "name": "HK A Solltemperatur Normal" },
+      "hkc_temp_normal": { "name": "HK C Solltemperatur Normal" },
+      "hka_temp_eco": { "name": "HK A Solltemperatur Eco" },
+      "hkc_temp_eco": { "name": "HK C Solltemperatur Eco" }
     }
   }
 }

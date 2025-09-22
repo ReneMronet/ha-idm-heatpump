@@ -1,7 +1,8 @@
 """
-sensor.py – v1.24 (2025-09-22)
+sensor.py – v1.25 (2025-09-22)
 
 Sensor-Definitionen für iDM Wärmepumpe.
+- Nutzt update_interval dynamisch aus hass.data[DOMAIN][entry_id]
 """
 
 from datetime import timedelta
@@ -40,10 +41,9 @@ from .const import (
     REG_BATTERIE_FUELLSTAND,
     REG_WP_STATUS,
     REG_WP_POWER,
-    CONF_UPDATE_INTERVAL,
-    DEFAULT_UPDATE_INTERVAL,
     CONF_UNIT_ID,
     DEFAULT_UNIT_ID,
+    DOMAIN,
 )
 from .modbus_handler import IDMModbusHandler
 
@@ -54,10 +54,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
     port = entry.data.get("port")
     unit_id = entry.data.get(CONF_UNIT_ID, DEFAULT_UNIT_ID)
 
-    interval = entry.options.get(
-        CONF_UPDATE_INTERVAL,
-        entry.data.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL),
-    )
+    # Dynamisches Update-Intervall aus hass.data (kommt aus __init__.py)
+    interval = hass.data[DOMAIN][entry.entry_id]["update_interval"]
 
     client = IDMModbusHandler(host, port, unit_id)
     await client.connect()

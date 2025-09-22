@@ -68,6 +68,12 @@
       "heat_request": { "name": "Heating Request" },
       "ww_request": { "name": "Hot Water Request" },
       "ww_onetime": { "name": "One-time Hot Water Charging" }
+    },
+    "number": {
+      "hka_temp_normal": { "name": "HK A Setpoint Normal" },
+      "hkc_temp_normal": { "name": "HK C Setpoint Normal" },
+      "hka_temp_eco": { "name": "HK A Setpoint Eco" },
+      "hkc_temp_eco": { "name": "HK C Setpoint Eco" }
     }
   }
 }

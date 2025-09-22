@@ -1,16 +1,15 @@
 """
-select.py – v1.8 (2025-09-22)
+select.py – v1.9 (2025-09-22)
 
 Dropdowns für die Betriebsarten:
 - System (1005)
 - Heizkreis A (1393)
 - Heizkreis C (1397)
-
-HK-A und HK-C verwenden beide Low-Byte (wie in der funktionierenden modbus_handler.py).
-Jetzt mit konfigurierbarer Unit-ID.
+- Nutzt update_interval aus hass.data[DOMAIN][entry_id]
 """
 
 import logging
+from datetime import timedelta
 from homeassistant.components.select import SelectEntity
 from homeassistant.helpers.entity import EntityCategory
 from .const import (
@@ -48,6 +47,9 @@ async def async_setup_entry(hass, entry, async_add_entities):
     port = entry.data.get("port")
     unit_id = entry.data.get(CONF_UNIT_ID, DEFAULT_UNIT_ID)
 
+    # Update-Intervall aus hass.data holen
+    interval = hass.data[DOMAIN][entry.entry_id]["update_interval"]
+
     client = IDMModbusHandler(host, port, unit_id)
     await client.connect()
 
@@ -60,6 +62,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 host=host,
                 register=REG_SYSTEM_MODE,
                 options_map=SYSTEM_OPTIONS,
+                interval=interval,
             ),
             _ModeSelect(
                 unique_id="idm_hka_betriebsart",
@@ -68,6 +71,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 host=host,
                 register=REG_HKA_MODE,
                 options_map=HK_OPTIONS,
+                interval=interval,
             ),
             _ModeSelect(
                 unique_id="idm_hkc_betriebsart",
@@ -76,6 +80,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 host=host,
                 register=REG_HKC_MODE,
                 options_map=HK_OPTIONS,
+                interval=interval,
             ),
         ]
     )
@@ -88,7 +93,7 @@ class _ModeSelect(SelectEntity):
     _attr_entity_category = EntityCategory.CONFIG
     _attr_has_entity_name = True
 
-    def __init__(self, unique_id, translation_key, client, host, register, options_map):
+    def __init__(self, unique_id, translation_key, client, host, register, options_map, interval):
         self._attr_unique_id = unique_id
         self._attr_translation_key = translation_key
         self._client = client
@@ -96,6 +101,7 @@ class _ModeSelect(SelectEntity):
         self._register = register
         self._options_map = options_map
         self._current_value = None
+        self._attr_scan_interval = timedelta(seconds=interval)
 
     @property
     def options(self):
