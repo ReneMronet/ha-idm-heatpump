@@ -3,10 +3,11 @@
     "step": {
       "user": {
         "title": "Connect iDM Heat Pump",
-        "description": "Enter the IP address, TCP port, and update interval.",
+        "description": "Enter the IP address, TCP port, unit ID and update interval.",
         "data": {
           "host": "IP Address",
           "port": "TCP Port",
+          "unit_id": "Unit ID",
           "update_interval": "Update Interval (seconds)"
         }
       }
@@ -22,8 +23,11 @@
     "step": {
       "init": {
         "title": "Options for iDM Heat Pump",
-        "description": "Adjust the update interval for querying the heat pump.",
+        "description": "Adjust the IP address, TCP port, unit ID and update interval.",
         "data": {
+          "host": "IP Address",
+          "port": "TCP Port",
+          "unit_id": "Unit ID",
           "update_interval": "Update Interval (seconds)"
         }
       }
@@ -39,24 +43,20 @@
       "ww_zapftemp": { "name": "Hot Water Tap Temperature (B46)" },
       "luftansaug": { "name": "Air Inlet Temperature (B37)" },
       "solar_kollektor": { "name": "Solar Collector Temperature (B61)" },
-
       "wp_vorlauf": { "name": "Heat Pump Flow Temperature (B33)" },
       "ruecklauf": { "name": "Return Temperature (B34)" },
       "ladefuehler": { "name": "Loading Sensor (B45)" },
       "durchfluss": { "name": "Heating Flow Rate (B2)" },
-
       "hka_vorlauf": { "name": "Heating Circuit A Flow Temperature (B49)" },
       "hka_soll_vorlauf": { "name": "Heating Circuit A Target Flow Temperature (B49s)" },
       "hkc_vorlauf": { "name": "Heating Circuit C Flow Temperature (B59)" },
       "hkc_soll_vorlauf": { "name": "Heating Circuit C Target Flow Temperature (B59s)" },
-
       "pv_ueberschuss": { "name": "PV Surplus (PV74)" },
       "e_heizstab": { "name": "Electric Heater Power (PV76)" },
       "pv_produktion": { "name": "PV Production (PV78)" },
       "hausverbrauch": { "name": "House Consumption (PV82)" },
       "batterie_entladung": { "name": "Battery Discharge (PV84)" },
       "batterie_fuellstand": { "name": "Battery State of Charge (PV86)" },
-
       "status_warmepumpe": { "name": "Heat Pump Status (B19)" },
       "hka_aktive_betriebsart": { "name": "Active Mode Heating Circuit A (B55)" },
       "hkc_aktive_betriebsart": { "name": "Active Mode Heating Circuit C (B65)" },

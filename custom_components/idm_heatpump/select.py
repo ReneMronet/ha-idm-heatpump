@@ -1,5 +1,5 @@
 """
-select.py – v1.7 (2025-09-18)
+select.py – v1.8 (2025-09-22)
 
 Dropdowns für die Betriebsarten:
 - System (1005)
@@ -7,12 +7,20 @@ Dropdowns für die Betriebsarten:
 - Heizkreis C (1397)
 
 HK-A und HK-C verwenden beide Low-Byte (wie in der funktionierenden modbus_handler.py).
+Jetzt mit konfigurierbarer Unit-ID.
 """
 
 import logging
 from homeassistant.components.select import SelectEntity
 from homeassistant.helpers.entity import EntityCategory
-from .const import DOMAIN, REG_SYSTEM_MODE, REG_HKA_MODE, REG_HKC_MODE
+from .const import (
+    DOMAIN,
+    REG_SYSTEM_MODE,
+    REG_HKA_MODE,
+    REG_HKC_MODE,
+    CONF_UNIT_ID,
+    DEFAULT_UNIT_ID,
+)
 from .modbus_handler import IDMModbusHandler
 
 _LOGGER = logging.getLogger(__name__)
@@ -38,7 +46,9 @@ HK_OPTIONS = {
 async def async_setup_entry(hass, entry, async_add_entities):
     host = entry.data["host"]
     port = entry.data.get("port")
-    client = IDMModbusHandler(host, port)
+    unit_id = entry.data.get(CONF_UNIT_ID, DEFAULT_UNIT_ID)
+
+    client = IDMModbusHandler(host, port, unit_id)
     await client.connect()
 
     async_add_entities(

@@ -1,5 +1,5 @@
 """
-const.py – v2.11 (2025-09-21)
+const.py – v2.12 (2025-09-22)
 
 Konstanten für iDM Wärmepumpen Integration
 """
@@ -10,8 +10,11 @@ DEFAULT_PORT = 502
 CONF_UPDATE_INTERVAL = "update_interval"
 DEFAULT_UPDATE_INTERVAL = 30
 
+CONF_UNIT_ID = "unit_id"
+DEFAULT_UNIT_ID = 1
+
 # -------------------------------------------------------------------
-# Register-Adressen
+# Register-Adressen (mit Navigator 10 B-Codes)
 # -------------------------------------------------------------------
 
 # System
@@ -28,23 +31,19 @@ REG_WW_TAP_TEMP = 1030      # (B46) Warmwasser-Zapftemperatur [°C]
 REG_AIR_INLET_TEMP = 1060   # (B37) Luftansaugtemperatur [°C]
 REG_SOLAR_COLLECTOR_TEMP = 1850  # (B61) Solarkollektortemperatur [°C]
 
-# NEU (vom User angefordert)
+# Neu
 REG_WP_VL_TEMP = 1050       # (B33) Wärmepumpenvorlauftemperatur [°C]
-REG_RETURN_TEMP = 1052      # (B34) Rücklauffühler [°C]
+REG_RETURN_TEMP = 1052      # (B34) Rücklauftemperatur [°C]
 REG_LOAD_TEMP = 1066        # (B45) Ladefühler [°C]
 REG_FLOW_SENSOR = 1072      # (B2) Durchfluss Heizung [l/min]
 
-# Heizkreise (Vorlauf & Soll-Vorlauf)
+# Heizkreise
 REG_HKA_VL = 1350           # (B49) Heizkreis A Vorlauftemperatur [°C]
 REG_HKA_VL_SOLL = 1378      # (B49s) Heizkreis A Soll-Vorlauftemperatur [°C]
 REG_HKC_VL = 1354           # (B59) Heizkreis C Vorlauftemperatur [°C]
 REG_HKC_VL_SOLL = 1382      # (B59s) Heizkreis C Soll-Vorlauftemperatur [°C]
-
-# Heizkreise (eingestellte Betriebsarten)
 REG_HKA_MODE = 1393         # (HKAMODE) Betriebsart Heizkreis A (UCHAR RW)
 REG_HKC_MODE = 1395         # (HKCMODE) Betriebsart Heizkreis C (UCHAR RW)
-
-# Heizkreise (aktive Betriebsarten)
 REG_HKA_ACTIVE_MODE = 1498  # (B55) Aktive Betriebsart Heizkreis A (UCHAR RO)
 REG_HKC_ACTIVE_MODE = 1500  # (B65) Aktive Betriebsart Heizkreis C (UCHAR RO)
 

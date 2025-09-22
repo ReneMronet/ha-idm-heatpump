@@ -1,15 +1,12 @@
 """
-switch.py – v1.2 (2025-09-18)
+switch.py – v1.3 (2025-09-22)
 
 Schalter-Definitionen für iDM Wärmepumpe.
-- Anforderung Heizen (1710)
-- Anforderung Warmwasserladung (1712)
-- Einmalige Warmwasserladung (1713)
 """
 
 import logging
 from homeassistant.components.switch import SwitchEntity
-from .const import DOMAIN, REG_HEAT_REQUEST, REG_WW_REQUEST, REG_WW_ONETIME
+from .const import DOMAIN, REG_HEAT_REQUEST, REG_WW_REQUEST, REG_WW_ONETIME, CONF_UNIT_ID, DEFAULT_UNIT_ID
 from .modbus_handler import IDMModbusHandler
 
 _LOGGER = logging.getLogger(__name__)
@@ -18,7 +15,9 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass, entry, async_add_entities):
     host = entry.data["host"]
     port = entry.data.get("port")
-    client = IDMModbusHandler(host, port)
+    unit_id = entry.data.get(CONF_UNIT_ID, DEFAULT_UNIT_ID)
+
+    client = IDMModbusHandler(host, port, unit_id)
     await client.connect()
 
     async_add_entities([
@@ -30,7 +29,6 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
 class IDMHeatpumpHeatSwitch(SwitchEntity):
     """Schalter für Heizungsanforderung."""
-
     _attr_has_entity_name = True
 
     def __init__(self, unique_id, translation_key, register, client, host):
@@ -76,7 +74,6 @@ class IDMHeatpumpHeatSwitch(SwitchEntity):
 
 class IDMHeatpumpWWSwitch(SwitchEntity):
     """Schalter für Warmwasseranforderung."""
-
     _attr_has_entity_name = True
 
     def __init__(self, unique_id, translation_key, register, client, host):
@@ -122,7 +119,6 @@ class IDMHeatpumpWWSwitch(SwitchEntity):
 
 class IDMHeatpumpWWOnetimeSwitch(SwitchEntity):
     """Schalter für einmalige Warmwasserladung."""
-
     _attr_has_entity_name = True
 
     def __init__(self, unique_id, translation_key, register, client, host):

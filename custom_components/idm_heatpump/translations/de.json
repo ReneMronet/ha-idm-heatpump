@@ -3,10 +3,11 @@
     "step": {
       "user": {
         "title": "iDM Wärmepumpe verbinden",
-        "description": "Gib die IP-Adresse, den TCP-Port und das Update-Intervall ein.",
+        "description": "Gib die IP-Adresse, den TCP-Port, die Unit-ID und das Update-Intervall ein.",
         "data": {
           "host": "IP-Adresse",
           "port": "TCP-Port",
+          "unit_id": "Unit-ID",
           "update_interval": "Update-Intervall (Sekunden)"
         }
       }
@@ -22,8 +23,11 @@
     "step": {
       "init": {
         "title": "Optionen für iDM Wärmepumpe",
-        "description": "Passe das Update-Intervall für die Abfrage der Wärmepumpe an.",
+        "description": "Passe die IP-Adresse, den TCP-Port, die Unit-ID und das Update-Intervall an.",
         "data": {
+          "host": "IP-Adresse",
+          "port": "TCP-Port",
+          "unit_id": "Unit-ID",
           "update_interval": "Update-Intervall (Sekunden)"
         }
       }
@@ -39,24 +43,20 @@
       "ww_zapftemp": { "name": "Warmwasserzapftemperatur (B46)" },
       "luftansaug": { "name": "Luftansaugtemperatur (B37)" },
       "solar_kollektor": { "name": "Solarkollektortemperatur (B61)" },
-
       "wp_vorlauf": { "name": "Wärmepumpenvorlauftemperatur (B33)" },
       "ruecklauf": { "name": "Rücklauftemperatur (B34)" },
       "ladefuehler": { "name": "Ladefühler (B45)" },
       "durchfluss": { "name": "Durchfluss Heizung (B2)" },
-
       "hka_vorlauf": { "name": "Heizkreis A Vorlauftemperatur (B49)" },
       "hka_soll_vorlauf": { "name": "Heizkreis A Soll-Vorlauftemperatur (B49s)" },
       "hkc_vorlauf": { "name": "Heizkreis C Vorlauftemperatur (B59)" },
       "hkc_soll_vorlauf": { "name": "Heizkreis C Soll-Vorlauftemperatur (B59s)" },
-
       "pv_ueberschuss": { "name": "PV-Überschuss (PV74)" },
       "e_heizstab": { "name": "Leistung E-Heizstab (PV76)" },
       "pv_produktion": { "name": "PV-Produktion (PV78)" },
       "hausverbrauch": { "name": "Hausverbrauch (PV82)" },
       "batterie_entladung": { "name": "Batterieentladung (PV84)" },
       "batterie_fuellstand": { "name": "Batteriefüllstand (PV86)" },
-
       "status_warmepumpe": { "name": "Status Wärmepumpe (B19)" },
       "hka_aktive_betriebsart": { "name": "Aktive Betriebsart Heizkreis A (B55)" },
       "hkc_aktive_betriebsart": { "name": "Aktive Betriebsart Heizkreis C (B65)" },

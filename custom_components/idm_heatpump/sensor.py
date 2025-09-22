@@ -1,13 +1,7 @@
 """
-sensor.py – v1.23 (2025-09-21)
+sensor.py – v1.24 (2025-09-22)
 
 Sensor-Definitionen für iDM Wärmepumpe.
-- Temperaturen (Außen, Speicher, WW, Luft, Solar)
-- Wärmepumpe Vorlauf, Rücklauf, Ladefühler, Durchfluss
-- Heizkreise A & C (Vorlauf, Soll-Vorlauf, aktive Betriebsart mit Icon)
-- PV- und Batterie-Werte
-- Status Wärmepumpe (Bereit/Heizbetrieb, mit Icon)
-- Leistungsaufnahme Wärmepumpe (Reg. 4122)
 """
 
 from datetime import timedelta
@@ -48,6 +42,8 @@ from .const import (
     REG_WP_POWER,
     CONF_UPDATE_INTERVAL,
     DEFAULT_UPDATE_INTERVAL,
+    CONF_UNIT_ID,
+    DEFAULT_UNIT_ID,
 )
 from .modbus_handler import IDMModbusHandler
 
@@ -56,13 +52,14 @@ async def async_setup_entry(hass, entry, async_add_entities):
     """Initialisiert alle Sensor-Entities beim Setup des Integrations-Eintrags."""
     host = entry.data["host"]
     port = entry.data.get("port")
+    unit_id = entry.data.get(CONF_UNIT_ID, DEFAULT_UNIT_ID)
 
     interval = entry.options.get(
         CONF_UPDATE_INTERVAL,
         entry.data.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL),
     )
 
-    client = IDMModbusHandler(host, port)
+    client = IDMModbusHandler(host, port, unit_id)
     await client.connect()
 
     sensors = [
