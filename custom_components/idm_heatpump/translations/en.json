@@ -13,10 +13,12 @@
       }
     },
     "error": {
-      "cannot_connect": "Failed to connect to iDM Heat Pump. Please check IP/Port."
+      "cannot_connect": "Failed to connect to iDM Heat Pump. Please check IP/Port.",
+      "cannot_connect_options": "Update failed: Could not connect to iDM Heat Pump. Please check new IP/Port."
     },
     "abort": {
-      "single_instance_allowed": "The iDM Heat Pump integration is already configured."
+      "single_instance_allowed": "The iDM Heat Pump integration is already configured.",
+      "already_configured": "A heat pump with this IP address is already configured."
     }
   },
   "options": {

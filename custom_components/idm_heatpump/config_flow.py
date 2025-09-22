@@ -1,11 +1,13 @@
 """
-config_flow.py – v1.11 (2025-09-22)
+config_flow.py – v1.20 (2025-09-22)
 
 ConfigFlow + OptionsFlow für die iDM Wärmepumpe Integration.
 - Einrichtung über Host, Port, Unit-ID und Update-Intervall
-- Optionen können nachträglich geändert werden
+- TCP-Erreichbarkeit wird beim Anlegen und Ändern geprüft
+- Duplikatprüfung: gleiche IP/Port darf nicht mehrfach angelegt werden
 """
 
+import socket
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_PORT
@@ -24,20 +26,37 @@ class IDMHeatpumpConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def async_step_user(self, user_input=None):
+        errors = {}
+
         if user_input is not None:
-            return self.async_create_entry(
-                title="iDM Wärmepumpe",
-                data=user_input,
-            )
+            host = user_input[CONF_HOST]
+            port = user_input.get(CONF_PORT, DEFAULT_PORT)
+
+            # Duplikatsprüfung (Setup)
+            for entry in self._async_current_entries():
+                if entry.data[CONF_HOST] == host and entry.data.get(CONF_PORT, DEFAULT_PORT) == port:
+                    return self.async_abort(reason="already_configured")
+
+            try:
+                sock = socket.create_connection((host, port), timeout=3)
+                sock.close()
+
+                return self.async_create_entry(
+                    title="iDM Wärmepumpe",
+                    data=user_input,
+                )
+
+            except OSError:
+                errors["base"] = "cannot_connect"
 
         schema = vol.Schema({
-            vol.Required(CONF_HOST): str,
-            vol.Optional(CONF_PORT, default=DEFAULT_PORT): int,
-            vol.Optional(CONF_UNIT_ID, default=DEFAULT_UNIT_ID): int,
-            vol.Optional(CONF_UPDATE_INTERVAL, default=DEFAULT_UPDATE_INTERVAL): int,
+            vol.Required(CONF_HOST, default=user_input.get(CONF_HOST) if user_input else ""): str,
+            vol.Optional(CONF_PORT, default=user_input.get(CONF_PORT) if user_input else DEFAULT_PORT): int,
+            vol.Optional(CONF_UNIT_ID, default=user_input.get(CONF_UNIT_ID) if user_input else DEFAULT_UNIT_ID): int,
+            vol.Optional(CONF_UPDATE_INTERVAL, default=user_input.get(CONF_UPDATE_INTERVAL) if user_input else DEFAULT_UPDATE_INTERVAL): int,
         })
 
-        return self.async_show_form(step_id="user", data_schema=schema)
+        return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
 
     @staticmethod
     def async_get_options_flow(config_entry):
@@ -52,8 +71,41 @@ class IDMHeatpumpOptionsFlow(config_entries.OptionsFlow):
         self._entry = config_entry
 
     async def async_step_init(self, user_input=None):
+        errors = {}
+
         if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
+            host = user_input.get(
+                CONF_HOST,
+                self._entry.options.get(
+                    CONF_HOST,
+                    self._entry.data.get(CONF_HOST, "0.0.0.0"),
+                ),
+            )
+            port = user_input.get(
+                CONF_PORT,
+                self._entry.options.get(
+                    CONF_PORT,
+                    self._entry.data.get(CONF_PORT, DEFAULT_PORT),
+                ),
+            )
+
+            # Duplikatsprüfung (OptionsFlow)
+            for entry in self.hass.config_entries.async_entries(DOMAIN):
+                if (
+                    entry.entry_id != self._entry.entry_id
+                    and entry.data[CONF_HOST] == host
+                    and entry.data.get(CONF_PORT, DEFAULT_PORT) == port
+                ):
+                    return self.async_abort(reason="already_configured")
+
+            try:
+                sock = socket.create_connection((host, port), timeout=3)
+                sock.close()
+
+                return self.async_create_entry(title="", data=user_input)
+
+            except OSError:
+                errors["base"] = "cannot_connect_options"
 
         schema = vol.Schema({
             vol.Optional(
@@ -86,4 +138,4 @@ class IDMHeatpumpOptionsFlow(config_entries.OptionsFlow):
             ): int,
         })
 
-        return self.async_show_form(step_id="init", data_schema=schema)
+        return self.async_show_form(step_id="init", data_schema=schema, errors=errors)

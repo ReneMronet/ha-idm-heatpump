@@ -13,10 +13,12 @@
       }
     },
     "error": {
-      "cannot_connect": "Verbindung zur iDM Wärmepumpe fehlgeschlagen. Bitte IP/Port prüfen."
+      "cannot_connect": "Verbindung zur iDM Wärmepumpe fehlgeschlagen. Bitte IP/Port prüfen.",
+      "cannot_connect_options": "Fehler beim Ändern: Verbindung zur iDM Wärmepumpe fehlgeschlagen. Bitte neue IP/Port prüfen."
     },
     "abort": {
-      "single_instance_allowed": "Die iDM Wärmepumpe-Integration ist bereits eingerichtet."
+      "single_instance_allowed": "Die iDM Wärmepumpe-Integration ist bereits eingerichtet.",
+      "already_configured": "Eine Wärmepumpe mit dieser IP-Adresse ist bereits hinzugefügt."
     }
   },
   "options": {
