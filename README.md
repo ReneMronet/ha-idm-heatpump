@@ -65,10 +65,59 @@ Before using this integration, you need to enable Modbus TCP on your Navigator 2
 After setup, you'll get the following entities:
 
 ### Sensors
-- Temperatures (outdoor, heat storage, DHW, flow/return, etc.)
-- Power and energy values
-- Status information
-- Humidity
+| Entity-ID                              | Beschreibung                                | Quelle | Einheit |
+|----------------------------------------|---------------------------------------------|--------|---------|
+| `sensor.idm_aussentemperatur`          | Außentemperatur                             | B32    | °C      |
+| `sensor.idm_aussentemperatur_gemittelt`| Gemittelte Außentemperatur                  | B32a   | °C      |
+| `sensor.idm_wp_vorlauf`                | Wärmepumpenvorlauftemperatur                | B33    | °C      |
+| `sensor.idm_ruecklauf`                 | Rücklauftemperatur                          | B34    | °C      |
+| `sensor.idm_ladefuehler`               | Ladefühler                                  | B45    | °C      |
+| `sensor.idm_waermespeicher`            | Wärmespeichertemperatur                     | B41    | °C      |
+| `sensor.idm_ww_oben`                   | Warmwasser oben                             | B43    | °C      |
+| `sensor.idm_ww_unten`                  | Warmwasser unten                            | B44    | °C      |
+| `sensor.idm_ww_zapftemp`               | Warmwasser-Zapftemperatur                   | B46    | °C      |
+| `sensor.idm_luftansaug`                | Luftansaugtemperatur                        | B37    | °C      |
+| `sensor.idm_solar_kollektor`           | Solarkollektortemperatur                    | B61    | °C      |
+| `sensor.idm_hka_vorlauftemperatur`     | Heizkreis A Vorlauftemperatur               | B49    | °C      |
+| `sensor.idm_hka_soll_vorlauf`          | Heizkreis A Soll-Vorlauftemperatur          | B49s   | °C      |
+| `sensor.idm_hkc_vorlauftemperatur`     | Heizkreis C Vorlauftemperatur               | B59    | °C      |
+| `sensor.idm_hkc_soll_vorlauf`          | Heizkreis C Soll-Vorlauftemperatur          | B59s   | °C      |
+| `sensor.idm_verdampferaustritt_1`      | Verdampferaustritt 1                        | B79    | °C      |
+| `sensor.idm_fluessigkeitsleitung`      | Flüssigkeitsleitungstemperatur              | B87    | °C      |
+| `sensor.idm_heissgas_1`                | Heißgastemperatur 1                         | B71    | °C      |
+| `sensor.idm_durchfluss`                | Durchfluss Heizung                          | B2     | l/min   |
+| `sensor.idm_pv_ueberschuss`            | PV-Überschuss                               | PV74   | kW      |
+| `sensor.idm_e_heizstab`                | Leistung E-Heizstab                         | PV76   | kW      |
+| `sensor.idm_pv_produktion`             | PV-Produktion                               | PV78   | kW      |
+| `sensor.idm_hausverbrauch`             | Hausverbrauch                               | PV82   | kW      |
+| `sensor.idm_batterie_entladung`        | Batterieentladung                           | PV84   | kW      |
+| `sensor.idm_batterie_fuellstand`       | Batteriefüllstand                           | PV86   | %       |
+| `sensor.idm_status_warmepumpe`         | Status Wärmepumpe (Bereit/Heizbetrieb)      | B19    | -       |
+| `sensor.idm_wp_power`                  | Leistungsaufnahme Wärmepumpe                | B90    | kW      |
+| `sensor.idm_hka_aktive_betriebsart`    | Aktive Betriebsart Heizkreis A              | B55    | -       |
+| `sensor.idm_hkc_aktive_betriebsart`    | Aktive Betriebsart Heizkreis C              | B65    | -       |
+
+### Switches
+| Entity-ID                     | Beschreibung              | Register | Einheit |
+|--------------------------------|---------------------------|----------|---------|
+| `switch.idm_heat_request`      | Heizungsanforderung       | 1710     | -       |
+| `switch.idm_ww_request`        | Warmwasseranforderung     | 1712     | -       |
+| `switch.idm_ww_onetime`        | Einmalige Warmwasserladung| 1713     | -       |
+
+### Numbers (Solltemperaturen)
+| Entity-ID                     | Beschreibung                  | Register | Einheit |
+|--------------------------------|--------------------------------|----------|---------|
+| `number.idm_hka_temp_normal`   | HK A Solltemperatur Normal    | 1401     | °C      |
+| `number.idm_hkc_temp_normal`   | HK C Solltemperatur Normal    | 1405     | °C      |
+| `number.idm_hka_temp_eco`      | HK A Solltemperatur Eco       | 1415     | °C      |
+| `number.idm_hkc_temp_eco`      | HK C Solltemperatur Eco       | 1419     | °C      |
+
+### Selects (Betriebsarten)
+| Entity-ID                     | Beschreibung                 | Register | Einheit |
+|--------------------------------|------------------------------|----------|---------|
+| `select.idm_betriebsart`       | Betriebsart System           | 1005     | -       |
+| `select.idm_hka_betriebsart`   | Betriebsart Heizkreis A      | 1393     | -       |
+| `select.idm_hkc_betriebsart`   | Betriebsart Heizkreis C      | 1395     | -       |
 
 ### Controls
 - System operation mode (Standby, Auto, Away, etc.)
