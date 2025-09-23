@@ -49,6 +49,9 @@
       "ruecklauf": { "name": "Return Temperature (B34)" },
       "ladefuehler": { "name": "Loading Sensor (B45)" },
       "durchfluss": { "name": "Heating Flow Rate (B2)" },
+      "verdampferaustritt_1": { "name": "Evaporator Outlet 1 (B79)" },
+      "fluessigkeitsleitung": { "name": "Liquid Line Temperature (B87)" },
+      "heissgas_1": { "name": "Hot Gas Temperature 1 (B71)" },
       "hka_vorlauf": { "name": "Heating Circuit A Flow Temperature (B49)" },
       "hka_soll_vorlauf": { "name": "Heating Circuit A Target Flow Temperature (B49s)" },
       "hkc_vorlauf": { "name": "Heating Circuit C Flow Temperature (B59)" },
@@ -63,9 +66,18 @@
       "hka_aktive_betriebsart": { "name": "Active Mode Heating Circuit A (B55)" },
       "hkc_aktive_betriebsart": { "name": "Active Mode Heating Circuit C (B65)" },
       "wp_power": { "name": "Heat Pump Power Consumption (B90)" },
-      "verdampferaustritt_1": { "name": "Evaporator Outlet 1 (B79)" },
-      "fluessigkeitsleitung": { "name": "Liquid Line Temperature (B87)" },
-      "heissgas_1": { "name": "Hot Gas Temperature 1 (B71)" }
+      "en_heizen": { "name": "Heating Energy" },
+      "en_gesamt": { "name": "Total Energy" },
+      "en_kuehlen": { "name": "Cooling Energy" },
+      "en_warmwasser": { "name": "DHW Energy" },
+      "en_abtauung": { "name": "Defrost Energy" },
+      "en_passivkuehlung": { "name": "Passive Cooling Energy" },
+      "en_solar": { "name": "Solar Energy" },
+      "en_eheizer": { "name": "Electric Heater Energy" },
+      "thermische_leistung": { "name": "Thermal Power" },
+      "solar_leistung": { "name": "Solar Power" },
+      "solar_ruecklauf": { "name": "Solar Collector Return Temperature (B75)" },
+      "solar_ladetemp": { "name": "Solar Charging Temperature (B74)" }
     },
     "switch": {
       "heat_request": { "name": "Heating Request" },
@@ -76,12 +88,16 @@
       "hka_temp_normal": { "name": "HK A Setpoint Normal" },
       "hkc_temp_normal": { "name": "HK C Setpoint Normal" },
       "hka_temp_eco": { "name": "HK A Setpoint Eco" },
-      "hkc_temp_eco": { "name": "HK C Setpoint Eco" }
+      "hkc_temp_eco": { "name": "HK C Setpoint Eco" },
+      "ww_target": { "name": "Hot Water Target Temperature (FW030, Default 46 °C)" },
+      "ww_start": { "name": "Hot Water Start Temperature (FW027, Default 46 °C)" },
+      "ww_stop": { "name": "Hot Water Stop Temperature (FW028, Default 50 °C)" }
     },
     "select": {
       "betriebsart": { "name": "System Operating Mode" },
       "hka_betriebsart": { "name": "Heating Circuit A Mode" },
-      "hkc_betriebsart": { "name": "Heating Circuit C Mode" }
+      "hkc_betriebsart": { "name": "Heating Circuit C Mode" },
+      "solar_betriebsart": { "name": "Solar Operating Mode (SC002)" }
     }
   }
 }

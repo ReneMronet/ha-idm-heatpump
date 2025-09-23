@@ -1,11 +1,11 @@
 """
-select.py – v1.9 (2025-09-22)
+select.py – v1.10 (2025-09-23)
 
 Dropdowns für die Betriebsarten:
 - System (1005)
 - Heizkreis A (1393)
-- Heizkreis C (1397)
-- Nutzt update_interval aus hass.data[DOMAIN][entry_id]
+- Heizkreis C (1395)
+- Solar (1856)
 """
 
 import logging
@@ -17,6 +17,7 @@ from .const import (
     REG_SYSTEM_MODE,
     REG_HKA_MODE,
     REG_HKC_MODE,
+    REG_SOLAR_MODE,
     CONF_UNIT_ID,
     DEFAULT_UNIT_ID,
 )
@@ -41,13 +42,19 @@ HK_OPTIONS = {
     "Manuell Kühlen": 5,
 }
 
+SOLAR_OPTIONS = {
+    "Automatik": 0,
+    "Warmwasser": 1,
+    "Heizung": 2,
+    "Warmwasser + Heizung": 3,
+    "Wärmequelle / Pool": 4,
+}
+
 
 async def async_setup_entry(hass, entry, async_add_entities):
     host = entry.data["host"]
     port = entry.data.get("port")
     unit_id = entry.data.get(CONF_UNIT_ID, DEFAULT_UNIT_ID)
-
-    # Update-Intervall aus hass.data holen
     interval = hass.data[DOMAIN][entry.entry_id]["update_interval"]
 
     client = IDMModbusHandler(host, port, unit_id)
@@ -82,13 +89,20 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 options_map=HK_OPTIONS,
                 interval=interval,
             ),
+            _ModeSelect(
+                unique_id="idm_solar_betriebsart",
+                translation_key="solar_betriebsart",
+                client=client,
+                host=host,
+                register=REG_SOLAR_MODE,
+                options_map=SOLAR_OPTIONS,
+                interval=interval,
+            ),
         ]
     )
 
 
 class _ModeSelect(SelectEntity):
-    """Gemeinsame Select-Entity für System/HK-A/HK-C."""
-
     _attr_should_poll = True
     _attr_entity_category = EntityCategory.CONFIG
     _attr_has_entity_name = True
@@ -112,7 +126,6 @@ class _ModeSelect(SelectEntity):
         return self._current_value
 
     async def async_update(self):
-        """Aktuellen Wert vom Modbus auslesen und übersetzen."""
         value = await self._client.read_uchar(self._register)
         if value is not None:
             for name, code in self._options_map.items():
@@ -121,7 +134,6 @@ class _ModeSelect(SelectEntity):
                     break
 
     async def async_select_option(self, option: str):
-        """Setzt eine neue Betriebsart über Modbus."""
         code = self._options_map.get(option)
         if code is not None:
             await self._client.write_uchar(self._register, code)

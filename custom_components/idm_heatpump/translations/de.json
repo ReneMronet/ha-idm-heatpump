@@ -49,6 +49,9 @@
       "ruecklauf": { "name": "Rücklauftemperatur (B34)" },
       "ladefuehler": { "name": "Ladefühler (B45)" },
       "durchfluss": { "name": "Durchfluss Heizung (B2)" },
+      "verdampferaustritt_1": { "name": "Verdampferaustritt 1 (B79)" },
+      "fluessigkeitsleitung": { "name": "Flüssigkeitsleitungstemperatur (B87)" },
+      "heissgas_1": { "name": "Heißgastemperatur 1 (B71)" },
       "hka_vorlauf": { "name": "Heizkreis A Vorlauftemperatur (B49)" },
       "hka_soll_vorlauf": { "name": "Heizkreis A Soll-Vorlauftemperatur (B49s)" },
       "hkc_vorlauf": { "name": "Heizkreis C Vorlauftemperatur (B59)" },
@@ -63,9 +66,18 @@
       "hka_aktive_betriebsart": { "name": "Aktive Betriebsart Heizkreis A (B55)" },
       "hkc_aktive_betriebsart": { "name": "Aktive Betriebsart Heizkreis C (B65)" },
       "wp_power": { "name": "Leistungsaufnahme Wärmepumpe (B90)" },
-      "verdampferaustritt_1": { "name": "Verdampferaustritt 1 (B79)" },
-      "fluessigkeitsleitung": { "name": "Flüssigkeitsleitungstemperatur (B87)" },
-      "heissgas_1": { "name": "Heißgastemperatur 1 (B71)" }
+      "en_heizen": { "name": "Wärmemenge Heizen" },
+      "en_gesamt": { "name": "Wärmemenge Gesamt" },
+      "en_kuehlen": { "name": "Wärmemenge Kühlen" },
+      "en_warmwasser": { "name": "Wärmemenge Warmwasser" },
+      "en_abtauung": { "name": "Wärmemenge Abtauung" },
+      "en_passivkuehlung": { "name": "Wärmemenge Passive Kühlung" },
+      "en_solar": { "name": "Wärmemenge Solar" },
+      "en_eheizer": { "name": "Wärmemenge Elektroheizeinsatz" },
+      "thermische_leistung": { "name": "Thermische Momentanleistung" },
+      "solar_leistung": { "name": "Momentanleistung Solar" },
+      "solar_ruecklauf": { "name": "Solar Kollektorrücklauftemperatur (B75)" },
+      "solar_ladetemp": { "name": "Solar Ladetemperatur (B74)" }
     },
     "switch": {
       "heat_request": { "name": "Heizungsanforderung" },
@@ -76,12 +88,16 @@
       "hka_temp_normal": { "name": "HK A Solltemperatur Normal" },
       "hkc_temp_normal": { "name": "HK C Solltemperatur Normal" },
       "hka_temp_eco": { "name": "HK A Solltemperatur Eco" },
-      "hkc_temp_eco": { "name": "HK C Solltemperatur Eco" }
+      "hkc_temp_eco": { "name": "HK C Solltemperatur Eco" },
+      "ww_target": { "name": "Warmwasser-Solltemperatur (FW030, Default 46 °C)" },
+      "ww_start": { "name": "WW-Ladung Einschalttemperatur (FW027, Default 46 °C)" },
+      "ww_stop": { "name": "WW-Ladung Ausschalttemperatur (FW028, Default 50 °C)" }
     },
     "select": {
       "betriebsart": { "name": "Betriebsart System" },
       "hka_betriebsart": { "name": "Betriebsart Heizkreis A" },
-      "hkc_betriebsart": { "name": "Betriebsart Heizkreis C" }
+      "hkc_betriebsart": { "name": "Betriebsart Heizkreis C" },
+      "solar_betriebsart": { "name": "Betriebsart Solar (SC002)" }
     }
   }
 }
