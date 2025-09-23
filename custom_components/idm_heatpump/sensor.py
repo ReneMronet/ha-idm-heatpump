@@ -1,8 +1,7 @@
 """
-sensor.py – v1.25 (2025-09-22)
+sensor.py – v1.26 (2025-09-23)
 
 Sensor-Definitionen für iDM Wärmepumpe.
-- Nutzt update_interval dynamisch aus hass.data[DOMAIN][entry_id]
 """
 
 from datetime import timedelta
@@ -41,6 +40,10 @@ from .const import (
     REG_BATTERIE_FUELLSTAND,
     REG_WP_STATUS,
     REG_WP_POWER,
+    # Neue Sensoren
+    REG_EVAP_OUT_TEMP,
+    REG_FLUID_LINE_TEMP,
+    REG_HOT_GAS_TEMP,
     CONF_UNIT_ID,
     DEFAULT_UNIT_ID,
     DOMAIN,
@@ -132,6 +135,14 @@ async def async_setup_entry(hass, entry, async_add_entities):
         # Leistungsaufnahme Wärmepumpe
         IDMHeatpumpFloatSensor("idm_wp_power", "wp_power", REG_WP_POWER,
                                UnitOfPower.KILO_WATT, client, host, SensorDeviceClass.POWER, interval),
+
+        # >>> Neue Sensoren <<<
+        IDMHeatpumpFloatSensor("idm_verdampferaustritt_1", "verdampferaustritt_1", REG_EVAP_OUT_TEMP,
+                               UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, interval),
+        IDMHeatpumpFloatSensor("idm_fluessigkeitsleitung", "fluessigkeitsleitung", REG_FLUID_LINE_TEMP,
+                               UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, interval),
+        IDMHeatpumpFloatSensor("idm_heissgas_1", "heissgas_1", REG_HOT_GAS_TEMP,
+                               UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, interval),
     ]
 
     async_add_entities(sensors)

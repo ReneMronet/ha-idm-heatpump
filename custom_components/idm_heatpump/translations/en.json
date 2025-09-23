@@ -62,7 +62,10 @@
       "status_warmepumpe": { "name": "Heat Pump Status (B19)" },
       "hka_aktive_betriebsart": { "name": "Active Mode Heating Circuit A (B55)" },
       "hkc_aktive_betriebsart": { "name": "Active Mode Heating Circuit C (B65)" },
-      "wp_power": { "name": "Heat Pump Power Consumption (B90)" }
+      "wp_power": { "name": "Heat Pump Power Consumption (B90)" },
+      "verdampferaustritt_1": { "name": "Evaporator Outlet 1 (B79)" },
+      "fluessigkeitsleitung": { "name": "Liquid Line Temperature (B87)" },
+      "heissgas_1": { "name": "Hot Gas Temperature 1 (B71)" }
     },
     "switch": {
       "heat_request": { "name": "Heating Request" },
@@ -74,6 +77,11 @@
       "hkc_temp_normal": { "name": "HK C Setpoint Normal" },
       "hka_temp_eco": { "name": "HK A Setpoint Eco" },
       "hkc_temp_eco": { "name": "HK C Setpoint Eco" }
+    },
+    "select": {
+      "betriebsart": { "name": "System Operating Mode" },
+      "hka_betriebsart": { "name": "Heating Circuit A Mode" },
+      "hkc_betriebsart": { "name": "Heating Circuit C Mode" }
     }
   }
 }

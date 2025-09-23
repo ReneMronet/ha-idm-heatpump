@@ -1,5 +1,5 @@
 """
-const.py – v2.12 (2025-09-22)
+const.py – v2.13 (2025-09-23)
 
 Konstanten für iDM Wärmepumpen Integration
 """
@@ -31,11 +31,16 @@ REG_WW_TAP_TEMP = 1030      # (B46) Warmwasser-Zapftemperatur [°C]
 REG_AIR_INLET_TEMP = 1060   # (B37) Luftansaugtemperatur [°C]
 REG_SOLAR_COLLECTOR_TEMP = 1850  # (B61) Solarkollektortemperatur [°C]
 
-# Neu
+# Wärmepumpe direkt
 REG_WP_VL_TEMP = 1050       # (B33) Wärmepumpenvorlauftemperatur [°C]
 REG_RETURN_TEMP = 1052      # (B34) Rücklauftemperatur [°C]
 REG_LOAD_TEMP = 1066        # (B45) Ladefühler [°C]
 REG_FLOW_SENSOR = 1072      # (B2) Durchfluss Heizung [l/min]
+
+# >>> Neue Sensoren <<<
+REG_EVAP_OUT_TEMP = 1058    # (B79) Verdampferaustritt 1 [°C]
+REG_FLUID_LINE_TEMP = 1054  # (B87) Flüssigkeitsleitungstemperatur [°C]
+REG_HOT_GAS_TEMP = 1062     # (B71) Heißgastemperatur 1 [°C]
 
 # Heizkreise
 REG_HKA_VL = 1350           # (B49) Heizkreis A Vorlauftemperatur [°C]

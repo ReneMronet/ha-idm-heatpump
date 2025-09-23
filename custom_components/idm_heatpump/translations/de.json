@@ -62,7 +62,10 @@
       "status_warmepumpe": { "name": "Status Wärmepumpe (B19)" },
       "hka_aktive_betriebsart": { "name": "Aktive Betriebsart Heizkreis A (B55)" },
       "hkc_aktive_betriebsart": { "name": "Aktive Betriebsart Heizkreis C (B65)" },
-      "wp_power": { "name": "Leistungsaufnahme Wärmepumpe (B90)" }
+      "wp_power": { "name": "Leistungsaufnahme Wärmepumpe (B90)" },
+      "verdampferaustritt_1": { "name": "Verdampferaustritt 1 (B79)" },
+      "fluessigkeitsleitung": { "name": "Flüssigkeitsleitungstemperatur (B87)" },
+      "heissgas_1": { "name": "Heißgastemperatur 1 (B71)" }
     },
     "switch": {
       "heat_request": { "name": "Heizungsanforderung" },
@@ -74,6 +77,11 @@
       "hkc_temp_normal": { "name": "HK C Solltemperatur Normal" },
       "hka_temp_eco": { "name": "HK A Solltemperatur Eco" },
       "hkc_temp_eco": { "name": "HK C Solltemperatur Eco" }
+    },
+    "select": {
+      "betriebsart": { "name": "Betriebsart System" },
+      "hka_betriebsart": { "name": "Betriebsart Heizkreis A" },
+      "hkc_betriebsart": { "name": "Betriebsart Heizkreis C" }
     }
   }
 }
