@@ -1,11 +1,8 @@
+# Datei: select.py
 """
-select.py – v1.10 (2025-09-23)
-
-Dropdowns für die Betriebsarten:
-- System (1005)
-- Heizkreis A (1393)
-- Heizkreis C (1395)
-- Solar (1856)
+iDM Wärmepumpe (Modbus TCP)
+Version: v1.4 (Dokumentations-Update)
+Stand: 2025-09-24
 """
 
 import logging

@@ -44,7 +44,6 @@
       "ww_unten": { "name": "Hot Water Bottom (B44)" },
       "ww_zapftemp": { "name": "Hot Water Tap Temperature (B46)" },
       "luftansaug": { "name": "Air Inlet Temperature (B37)" },
-      "solar_kollektor": { "name": "Solar Collector Temperature (B61)" },
       "wp_vorlauf": { "name": "Heat Pump Flow Temperature (B33)" },
       "ruecklauf": { "name": "Return Temperature (B34)" },
       "ladefuehler": { "name": "Loading Sensor (B45)" },
@@ -65,19 +64,20 @@
       "status_warmepumpe": { "name": "Heat Pump Status (B19)" },
       "hka_aktive_betriebsart": { "name": "Active Mode Heating Circuit A (B55)" },
       "hkc_aktive_betriebsart": { "name": "Active Mode Heating Circuit C (B65)" },
-      "wp_power": { "name": "Heat Pump Power Consumption (B90)" },
-      "en_heizen": { "name": "Heating Energy" },
-      "en_gesamt": { "name": "Total Energy" },
-      "en_kuehlen": { "name": "Cooling Energy" },
-      "en_warmwasser": { "name": "DHW Energy" },
-      "en_abtauung": { "name": "Defrost Energy" },
-      "en_passivkuehlung": { "name": "Passive Cooling Energy" },
-      "en_solar": { "name": "Solar Energy" },
-      "en_eheizer": { "name": "Electric Heater Energy" },
-      "thermische_leistung": { "name": "Thermal Power" },
-      "solar_leistung": { "name": "Solar Power" },
+      "wp_power": { "name": "Electrical Total Power Heat Pump (Reg. 4122)" },
+      "en_heizen": { "name": "Energy Heating (Reg. 1748)" },
+      "en_gesamt": { "name": "Energy Total (Reg. 1750)" },
+      "en_kuehlen": { "name": "Energy Cooling (Reg. 1752)" },
+      "en_warmwasser": { "name": "Energy Domestic Hot Water (Reg. 1754)" },
+      "en_abtauung": { "name": "Energy Defrost (Reg. 1756)" },
+      "en_passivkuehlung": { "name": "Energy Passive Cooling (Reg. 1758)" },
+      "en_solar": { "name": "Energy Solar (Reg. 1760)" },
+      "en_eheizer": { "name": "Energy Electric Heater (Reg. 1762)" },
+      "thermische_leistung": { "name": "Thermal Power (Reg. 1790)" },
+      "solar_leistung": { "name": "Solar Power (Reg. 1792)" },
+      "solar_kollektor": { "name": "Solar Collector Temperature (B73)" },
       "solar_ruecklauf": { "name": "Solar Collector Return Temperature (B75)" },
-      "solar_ladetemp": { "name": "Solar Charging Temperature (B74)" }
+      "solar_ladetemp": { "name": "Solar Charge Temperature (B74)" }
     },
     "switch": {
       "heat_request": { "name": "Heating Request" },
@@ -85,19 +85,19 @@
       "ww_onetime": { "name": "One-time Hot Water Charging" }
     },
     "number": {
-      "hka_temp_normal": { "name": "HK A Setpoint Normal" },
-      "hkc_temp_normal": { "name": "HK C Setpoint Normal" },
-      "hka_temp_eco": { "name": "HK A Setpoint Eco" },
-      "hkc_temp_eco": { "name": "HK C Setpoint Eco" },
-      "ww_target": { "name": "Hot Water Target Temperature (FW030, Default 46 °C)" },
-      "ww_start": { "name": "Hot Water Start Temperature (FW027, Default 46 °C)" },
-      "ww_stop": { "name": "Hot Water Stop Temperature (FW028, Default 50 °C)" }
+      "hka_temp_normal": { "name": "HC A Setpoint Normal" },
+      "hkc_temp_normal": { "name": "HC C Setpoint Normal" },
+      "hka_temp_eco": { "name": "HC A Setpoint Eco" },
+      "hkc_temp_eco": { "name": "HC C Setpoint Eco" },
+      "ww_target": { "name": "DHW Target Temperature" },
+      "ww_start": { "name": "DHW Start Temperature" },
+      "ww_stop": { "name": "DHW Stop Temperature" }
     },
     "select": {
       "betriebsart": { "name": "System Operating Mode" },
       "hka_betriebsart": { "name": "Heating Circuit A Mode" },
       "hkc_betriebsart": { "name": "Heating Circuit C Mode" },
-      "solar_betriebsart": { "name": "Solar Operating Mode (SC002)" }
+      "solar_betriebsart": { "name": "Solar Operating Mode" }
     }
   }
 }

@@ -75,64 +75,68 @@ Unterstützt werden Temperaturfühler, Energiemengen, Leistungen, PV-/Batteriewe
 | `sensor.idm_wp_vorlauf`                | Wärmepumpenvorlauftemperatur                | B33    | °C      |
 | `sensor.idm_ruecklauf`                 | Rücklauftemperatur                          | B34    | °C      |
 | `sensor.idm_ladefuehler`               | Ladefühler                                  | B45    | °C      |
-| `sensor.idm_waermespeicher`            | Wärmespeichertemperatur                     | B41    | °C      |
-| `sensor.idm_ww_oben`                   | Warmwasser oben                             | B43    | °C      |
-| `sensor.idm_ww_unten`                  | Warmwasser unten                            | B44    | °C      |
-| `sensor.idm_ww_zapftemp`               | Warmwasser-Zapftemperatur                   | B46    | °C      |
+| `sensor.idm_durchfluss`                | Durchfluss Heizung                          | B2     | l/min   |
 | `sensor.idm_luftansaug`                | Luftansaugtemperatur                        | B37    | °C      |
 | `sensor.idm_verdampferaustritt_1`      | Verdampferaustritt 1                        | B79    | °C      |
 | `sensor.idm_fluessigkeitsleitung`      | Flüssigkeitsleitungstemperatur              | B87    | °C      |
 | `sensor.idm_heissgas_1`                | Heißgastemperatur 1                         | B71    | °C      |
-| `sensor.idm_solar_kollektor`           | Solarkollektortemperatur                    | B73    | °C      |
-| `sensor.idm_solar_ruecklauf`           | Solarkollektorrücklauftemperatur            | B75    | °C      |
-| `sensor.idm_solar_ladetemp`            | Solar Ladetemperatur                        | B74    | °C      |
-| `sensor.idm_durchfluss`                | Durchfluss Heizung                          | B2     | l/min   |
+| `sensor.idm_waermespeicher`            | Wärmespeichertemperatur                     | B41    | °C      |
+| `sensor.idm_ww_oben`                   | Warmwasser oben                             | B43    | °C      |
+| `sensor.idm_ww_unten`                  | Warmwasser unten                            | B44    | °C      |
+| `sensor.idm_ww_zapftemp`               | Warmwasser-Zapftemperatur                   | B46    | °C      |
+| `sensor.idm_hka_vorlauf`               | Heizkreis A Vorlauftemperatur               | B49    | °C      |
+| `sensor.idm_hka_soll_vorlauf`          | Heizkreis A Soll-Vorlauftemperatur          | B49s   | °C      |
+| `sensor.idm_hkc_vorlauf`               | Heizkreis C Vorlauftemperatur               | B59    | °C      |
+| `sensor.idm_hkc_soll_vorlauf`          | Heizkreis C Soll-Vorlauftemperatur          | B59s   | °C      |
 | `sensor.idm_status_warmepumpe`         | Status Wärmepumpe (Bereit/Heizbetrieb)      | B19    | -       |
 | `sensor.idm_hka_aktive_betriebsart`    | Aktive Betriebsart Heizkreis A              | B55    | -       |
 | `sensor.idm_hkc_aktive_betriebsart`    | Aktive Betriebsart Heizkreis C              | B65    | -       |
-| `sensor.idm_wp_power`                  | Leistungsaufnahme Wärmepumpe                | B90    | kW      |
-| `sensor.idm_pv_ueberschuss`            | PV-Überschuss                               | 74   | kW      |
-| `sensor.idm_e_heizstab`                | Leistung E-Heizstab                         | 76   | kW      |
-| `sensor.idm_pv_produktion`             | PV-Produktion                               | 78   | kW      |
-| `sensor.idm_hausverbrauch`             | Hausverbrauch                               | 82   | kW      |
-| `sensor.idm_batterie_entladung`        | Batterieentladung                           | 84   | kW      |
-| `sensor.idm_batterie_fuellstand`       | Batteriefüllstand                           | 86   | %       |
-| `sensor.idm_en_heizen`                 | Wärmemenge Heizen                           | 1748 | kWh   |
-| `sensor.idm_en_gesamt`                 | Wärmemenge Gesamt                           | 1750 | kWh   |
-| `sensor.idm_en_kuehlen`                | Wärmemenge Kühlen                           | 1752 | kWh   |
-| `sensor.idm_en_warmwasser`             | Wärmemenge Warmwasser                       | 1754 | kWh   |
-| `sensor.idm_en_abtauung`               | Wärmemenge Abtauung                         | 1756 | kWh   |
-| `sensor.idm_en_passivkuehlung`         | Wärmemenge Passive Kühlung                  | 1758 | kWh   |
-| `sensor.idm_en_solar`                  | Wärmemenge Solar                            | 1760 | kWh   |
-| `sensor.idm_en_eheizer`                | Wärmemenge Elektroheizeinsatz               | 1762 | kWh   |
-| `sensor.idm_thermische_leistung`       | Thermische Momentanleistung                 | 1790 | kW    |
-| `sensor.idm_solar_leistung`            | Momentanleistung Solar                      | 1792 | kW    |
+| `sensor.idm_wp_power`                  | Elektrische Gesamtleistung Wärmepumpe       | 4122   | kW      |
+| `sensor.idm_pv_ueberschuss`            | PV-Überschuss                               | 74   	| kW      |
+| `sensor.idm_e_heizstab`                | Leistung E-Heizstab                         | 76   	| kW      |
+| `sensor.idm_pv_produktion`             | PV-Produktion                               | 78   	| kW      |
+| `sensor.idm_hausverbrauch`             | Hausverbrauch                               | 82   	| kW      |
+| `sensor.idm_batterie_entladung`        | Batterieentladung                           | 84   	| kW      |
+| `sensor.idm_batterie_fuellstand`       | Batteriefüllstand                           | 86   	| %       |
+| `sensor.idm_en_heizen`                 | Wärmemenge Heizen                           | 1748   | kWh     |
+| `sensor.idm_en_gesamt`                 | Wärmemenge Gesamt                           | 1750   | kWh     |
+| `sensor.idm_en_kuehlen`                | Wärmemenge Kühlen                           | 1752   | kWh     |
+| `sensor.idm_en_warmwasser`             | Wärmemenge Warmwasser                       | 1754   | kWh     |
+| `sensor.idm_en_abtauung`               | Wärmemenge Abtauung                         | 1756   | kWh     |
+| `sensor.idm_en_passivkuehlung`         | Wärmemenge Passive Kühlung                  | 1758   | kWh     |
+| `sensor.idm_en_solar`                  | Wärmemenge Solar                            | 1760   | kWh     |
+| `sensor.idm_en_eheizer`                | Wärmemenge Elektroheizeinsatz               | 1762   | kWh     |
+| `sensor.idm_thermische_leistung`       | Thermische Momentanleistung                 | 1790   | kW      |
+| `sensor.idm_solar_leistung`            | Momentanleistung Solar                      | 1792   | kW      |
+| `sensor.idm_solar_kollektor`           | Solarkollektortemperatur                    | B73    | °C      |
+| `sensor.idm_solar_ruecklauf`           | Solarkollektorrücklauftemperatur            | B75    | °C      |
+| `sensor.idm_solar_ladetemp`            | Solar-Ladetemperatur                        | B74    | °C      |
 
-### Numbers
-| Entity-ID                    | Beschreibung                                    | Quelle | Bereich |
-|------------------------------|-------------------------------------------------|--------|---------|
-| `number.idm_hka_temp_normal` | HK A Solltemperatur Normal                      | 1401 | 15–30 °C |
-| `number.idm_hkc_temp_normal` | HK C Solltemperatur Normal                      | 1405 | 15–30 °C |
-| `number.idm_hka_temp_eco`    | HK A Solltemperatur Eco                         | 1415 | 10–25 °C |
-| `number.idm_hkc_temp_eco`    | HK C Solltemperatur Eco                         | 1419 | 10–25 °C |
-| `number.idm_ww_target`       | Warmwasser-Solltemperatur (FW030, Default 46°C) | 1032 | 35–95 °C |
-| `number.idm_ww_start`        | WW-Ladung Einschalttemperatur (FW027, Default 46°C) | 1033 | 30–50 °C |
-| `number.idm_ww_stop`         | WW-Ladung Ausschalttemperatur (FW028, Default 50°C) | 1034 | 46–53 °C |
+### Switches (3)
+| Entity-ID                     | Beschreibung              | Register | Einheit |
+|--------------------------------|---------------------------|----------|---------|
+| `switch.idm_heat_request`      | Heizungsanforderung       | 1710     | -       |
+| `switch.idm_ww_request`        | Warmwasseranforderung     | 1712     | -       |
+| `switch.idm_ww_onetime`        | Einmalige Warmwasserladung| 1713     | -       |
 
-### Selects
-| Entity-ID                      | Beschreibung             | Quelle | Optionen |
-|--------------------------------|--------------------------|--------|----------|
-| `select.idm_betriebsart`       | Systembetriebsart        | SYSMODE / 1005 | 0=Standby, 1=Automatik, 2=Abwesend, 4=Nur Warmwasser, 5=Nur Heizen/Kühlen |
-| `select.idm_hka_betriebsart`   | Betriebsart Heizkreis A  | HKAMODE / 1393 | 0=Aus, 1=Zeitprogramm, 2=Normal, 3=Eco, 4=Manuell Heizen, 5=Manuell Kühlen |
-| `select.idm_hkc_betriebsart`   | Betriebsart Heizkreis C  | HKCMODE / 1395 | wie HK A |
-| `select.idm_solar_betriebsart` | Betriebsart Solar        | SC002 / 1856 | 0=Automatik, 1=Warmwasser, 2=Heizung, 3=Warmwasser+Heizung, 4=Wärmequelle/Pool |
+### Numbers (7)
+| Entity-ID                     | Beschreibung                       | Register | Einheit |
+|--------------------------------|------------------------------------|----------|---------|
+| `number.idm_hka_temp_normal`   | HK A Solltemperatur Normal         | 1401     | °C      |
+| `number.idm_hkc_temp_normal`   | HK C Solltemperatur Normal         | 1405     | °C      |
+| `number.idm_hka_temp_eco`      | HK A Solltemperatur Eco            | 1415     | °C      |
+| `number.idm_hkc_temp_eco`      | HK C Solltemperatur Eco            | 1419     | °C      |
+| `number.idm_ww_target`         | WW-Solltemperatur                  | 1032     | °C      |
+| `number.idm_ww_start`          | WW-Ladung Starttemperatur          | 1033     | °C      |
+| `number.idm_ww_stop`           | WW-Ladung Stopp-Temperatur         | 1034     | °C      |
 
-### Switches
-| Entity-ID                 | Beschreibung             | Quelle | Typ |
-|---------------------------|--------------------------|--------|-----|
-| `switch.idm_heat_request` | Heizungsanforderung      | HEATREQ / 1710 | BOOL RW |
-| `switch.idm_ww_request`   | Warmwasseranforderung    | WWREQ / 1712  | BOOL RW |
-| `switch.idm_ww_onetime`   | Einmalige Warmwasserladung | WWONCE / 1713 | BOOL RW |
+### Selects (4)
+| Entity-ID                     | Beschreibung                 | Register | Einheit |
+|--------------------------------|------------------------------|----------|---------|
+| `select.idm_betriebsart`       | Betriebsart System           | 1005     | -       |
+| `select.idm_hka_betriebsart`   | Betriebsart Heizkreis A      | 1393     | -       |
+| `select.idm_hkc_betriebsart`   | Betriebsart Heizkreis C      | 1395     | -       |
+| `select.idm_solar_betriebsart` | Betriebsart Solar            | 1856     | -       |
 
 ## Hinweise
 - Energiemengen (`en_*`) sind als `state_class: total_increasing` definiert.  

@@ -1,7 +1,8 @@
+# Datei: const.py
 """
-const.py – v2.15 (2025-09-23)
-
-Konstanten für iDM Wärmepumpen Integration
+iDM Wärmepumpe (Modbus TCP)
+Version: v1.6 (Dokumentations-Update)
+Stand: 2025-09-24
 """
 
 DOMAIN = "idm_heatpump"

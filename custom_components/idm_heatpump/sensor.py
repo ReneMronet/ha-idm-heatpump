@@ -1,7 +1,8 @@
+# Datei: sensor.py
 """
-sensor.py – v1.27 (2025-09-23)
-
-Sensor-Definitionen für iDM Wärmepumpe.
+iDM Wärmepumpe (Modbus TCP)
+Version: v1.28 (Dokumentations-Update)
+Stand: 2025-09-24
 """
 
 from datetime import timedelta

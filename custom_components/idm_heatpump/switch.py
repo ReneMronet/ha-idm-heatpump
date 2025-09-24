@@ -1,8 +1,8 @@
+# Datei: switch.py
 """
-switch.py – v1.4 (2025-09-22)
-
-Schalter-Definitionen für iDM Wärmepumpe.
-- Nutzt update_interval aus hass.data[DOMAIN][entry_id]
+iDM Wärmepumpe (Modbus TCP)
+Version: v1.5 (Dokumentations-Update)
+Stand: 2025-09-24
 """
 
 import logging

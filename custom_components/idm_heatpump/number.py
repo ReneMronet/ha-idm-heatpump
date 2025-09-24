@@ -1,10 +1,8 @@
+# Datei: number.py
 """
-number.py – v1.4 (2025-09-23)
-
-Stellwerte (Raumsoll- und Warmwassertemperaturen) für iDM Wärmepumpe.
-- Heizkreise: FLOAT RW Register (werden nur bei Änderung geschrieben)
-- Warmwasser: UCHAR RW Register
-- Defaultwerte nur als Attribut "default_value" sichtbar
+iDM Wärmepumpe (Modbus TCP)
+Version: v1.5 (Dokumentations-Update)
+Stand: 2025-09-24
 """
 
 import logging

@@ -1,10 +1,8 @@
+# Datei: config_flow.py
 """
-config_flow.py – v1.20 (2025-09-22)
-
-ConfigFlow + OptionsFlow für die iDM Wärmepumpe Integration.
-- Einrichtung über Host, Port, Unit-ID und Update-Intervall
-- TCP-Erreichbarkeit wird beim Anlegen und Ändern geprüft
-- Duplikatprüfung: gleiche IP/Port darf nicht mehrfach angelegt werden
+iDM Wärmepumpe (Modbus TCP)
+Version: v1.20 (Dokumentations-Update)
+Stand: 2025-09-24
 """
 
 import socket

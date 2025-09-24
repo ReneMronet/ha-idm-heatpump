@@ -1,10 +1,8 @@
+# Datei: modbus_handler.py
 """
-modbus_handler.py – v2.8 (2025-09-22)
-
-Funktionen für die Kommunikation mit der iDM Wärmepumpe über Modbus TCP.
-- Unterstützt: FLOAT (32-bit, Little Endian), WORD (16-bit), UCHAR (Low-Byte)
-- Nutzt pymodbus AsyncModbusTcpClient
-- Unit-ID wird gespeichert, aber nicht übergeben (pymodbus>=3.8.3 ignoriert 'unit')
+iDM Wärmepumpe (Modbus TCP)
+Version: v2.9 (Dokumentations-Update)
+Stand: 2025-09-24
 """
 
 import logging

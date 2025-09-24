@@ -1,5 +1,8 @@
+# Datei: __init__.py
 """
-__init__.py – v1.9 (2025-09-22)
+iDM Wärmepumpe (Modbus TCP)
+Version: v1.9 (Dokumentations-Update)
+Stand: 2025-09-24
 """
 
 from homeassistant.const import Platform
