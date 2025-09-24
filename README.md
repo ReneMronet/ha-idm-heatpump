@@ -77,9 +77,6 @@ Unterstützt werden Temperaturfühler, Energiemengen, Leistungen, PV-/Batteriewe
 | `sensor.idm_ladefuehler`               | Ladefühler                                  | B45    | °C      |
 | `sensor.idm_durchfluss`                | Durchfluss Heizung                          | B2     | l/min   |
 | `sensor.idm_luftansaug`                | Luftansaugtemperatur                        | B37    | °C      |
-| `sensor.idm_verdampferaustritt_1`      | Verdampferaustritt 1                        | B79    | °C      |
-| `sensor.idm_fluessigkeitsleitung`      | Flüssigkeitsleitungstemperatur              | B87    | °C      |
-| `sensor.idm_heissgas_1`                | Heißgastemperatur 1                         | B71    | °C      |
 | `sensor.idm_waermespeicher`            | Wärmespeichertemperatur                     | B41    | °C      |
 | `sensor.idm_ww_oben`                   | Warmwasser oben                             | B43    | °C      |
 | `sensor.idm_ww_unten`                  | Warmwasser unten                            | B44    | °C      |
@@ -164,6 +161,5 @@ Additional Resources
 iDM Documentation: 812663_Rev.0 - Navigator 10.0 Modbus Interface
 Home Assistant Modbus: Official Documentation (https://www.home-assistant.io/integrations/modbus/)
 Pymodbus Library: GitHub Repository (https://github.com/riptideio/pymodbus)
-
 
 

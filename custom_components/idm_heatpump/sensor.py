@@ -32,9 +32,6 @@ from .const import (
     REG_RETURN_TEMP,
     REG_LOAD_TEMP,
     REG_FLOW_SENSOR,
-    REG_EVAP_OUT_TEMP,
-    REG_FLUID_LINE_TEMP,
-    REG_HOT_GAS_TEMP,
     # Heizkreise
     REG_HKA_VL,
     REG_HKA_VL_SOLL,
@@ -104,12 +101,6 @@ async def async_setup_entry(hass, entry, async_add_entities):
                                UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
 
         # Zusätzliche WP-Sensoren
-        IDMHeatpumpFloatSensor("idm_verdampferaustritt_1", "verdampferaustritt_1", REG_EVAP_OUT_TEMP,
-                               UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpFloatSensor("idm_fluessigkeitsleitung", "fluessigkeitsleitung", REG_FLUID_LINE_TEMP,
-                               UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpFloatSensor("idm_heissgas_1", "heissgas_1", REG_HOT_GAS_TEMP,
-                               UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
 
         # Wärmespeicher / Warmwasser
         IDMHeatpumpFloatSensor("idm_waermespeicher", "waermespeicher", REG_HEATBUFFER_TEMP,

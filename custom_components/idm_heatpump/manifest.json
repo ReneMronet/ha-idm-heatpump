@@ -1,15 +1,20 @@
 {
   "domain": "idm_heatpump",
   "name": "iDM Wärmepumpe",
-  "after_dependencies": ["modbus"],
-  "codeowners": ["@ReneMronet"],
+  "after_dependencies": [
+    "modbus"
+  ],
+  "codeowners": [
+    "@ReneMronet"
+  ],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/ReneMronet/ha-idm-heatpump",
   "integration_type": "hub",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/ReneMronet/ha-idm-heatpump/issues",
-  "requirements": ["pymodbus>=3.8.3"],
-  "version": "v0.2.0"
+  "requirements": [
+    "pymodbus>=3.8.3"
+  ],
+  "version": "v0.2.3"
 }
-

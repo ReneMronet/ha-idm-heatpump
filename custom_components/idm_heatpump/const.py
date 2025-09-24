@@ -38,9 +38,6 @@ REG_LOAD_TEMP = 1066        # (B45) Ladefühler [°C]
 REG_FLOW_SENSOR = 1072      # (B2) Durchfluss Heizung [l/min]
 
 # Zusätzliche WP-Sensoren
-REG_EVAP_OUT_TEMP = 1058    # (B79) Verdampferaustritt 1 [°C]
-REG_FLUID_LINE_TEMP = 1054  # (B87) Flüssigkeitsleitungstemperatur [°C]
-REG_HOT_GAS_TEMP = 1062     # (B71) Heißgastemperatur 1 [°C]
 
 # Heizkreise
 REG_HKA_VL = 1350           # (B49) Heizkreis A Vorlauftemperatur [°C]
