@@ -1,8 +1,11 @@
 # Datei: const.py
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v1.6 (Dokumentations-Update)
-Stand: 2025-09-24
+Version: v1.7
+Stand: 2025-10-28
+
+Änderung v1.7:
+- REG_AIR_INLET_TEMP_2 für Luftansaugtemperatur 2 (B46) ergänzt
 """
 
 DOMAIN = "idm_heatpump"
@@ -28,16 +31,15 @@ REG_OUTDOOR_TEMP_AVG = 1002 # (B32a) Gemittelte Außentemperatur [°C]
 REG_HEATBUFFER_TEMP = 1008  # (B41) Wärmespeichertemperatur [°C]
 REG_WW_BOTTOM_TEMP = 1012   # (B44) Warmwasser unten [°C]
 REG_WW_TOP_TEMP = 1014      # (B43) Warmwasser oben [°C]
-REG_WW_TAP_TEMP = 1030      # (B46) Warmwasser-Zapftemperatur [°C]
+REG_WW_TAP_TEMP = 1030      # (B46) Warmwasser-Zapftemperatur [°C] (kann bei manchen Anlagen leer sein)
 REG_AIR_INLET_TEMP = 1060   # (B37) Luftansaugtemperatur [°C]
+REG_AIR_INLET_TEMP_2 = 1064 # (B46) Luftansaugtemperatur 2 [°C] (bei AERO ALM relevant)
 
 # Wärmepumpe direkt
 REG_WP_VL_TEMP = 1050       # (B33) Wärmepumpenvorlauftemperatur [°C]
 REG_RETURN_TEMP = 1052      # (B34) Rücklauftemperatur [°C]
 REG_LOAD_TEMP = 1066        # (B45) Ladefühler [°C]
-REG_FLOW_SENSOR = 1072      # (B2) Durchfluss Heizung [l/min]
-
-# Zusätzliche WP-Sensoren
+REG_FLOW_SENSOR = 1072      # (B2) Durchfluss Heizung [l/min] (kann bei Anlagen ohne echten Durchflusssensor -1 liefern)
 
 # Heizkreise
 REG_HKA_VL = 1350           # (B49) Heizkreis A Vorlauftemperatur [°C]
@@ -76,15 +78,15 @@ REG_THERMAL_POWER     = 1790  # Thermische Momentanleistung [kW]
 REG_SOLAR_POWER       = 1792  # Momentanleistung Solar [kW]
 
 # Solar (Temperaturen und Modus)
-REG_SOLAR_COLLECTOR_TEMP = 1850  # (B73) Solar Kollektortemperatur [°C]
-REG_SOLAR_RETURN_TEMP    = 1852  # (B75) Solar Kollektorrücklauftemperatur [°C]
-REG_SOLAR_CHARGE_TEMP    = 1854  # (B74) Solar Ladetemperatur [°C]
+REG_SOLAR_COLLECTOR_TEMP = 1850  # (B73) Solarkollektortemperatur [°C]
+REG_SOLAR_RETURN_TEMP    = 1852  # (B75) Solarkollektorrücklauftemperatur [°C]
+REG_SOLAR_CHARGE_TEMP    = 1854  # (B74) Solar-Ladetemperatur [°C]
 REG_SOLAR_MODE           = 1856  # (SC002) Betriebsart Solar (UCHAR RW)
 
 # Leistung WP (elektrisch)
-REG_WP_POWER = 4122         # (B90) Elektrische Gesamtleistung Wärmepumpe [kW]
+REG_WP_POWER = 4122         # Elektrische Gesamtleistung Wärmepumpe [kW]
 
-# PV / Batterie (hersteller-spezifisch)
+# PV / Batterie (RW/RO laut Hersteller)
 REG_PV_SURPLUS = 74         # (PV74) Aktueller PV-Überschuss [kW]
 REG_EHEIZSTAB = 76          # (PV76) Leistung E-Heizstab [kW]
 REG_PV_PRODUKTION = 78      # (PV78) Aktuelle PV-Produktion [kW]

@@ -58,6 +58,9 @@
       "luftansaug": {
         "name": "Air Inlet Temperature (B37)"
       },
+      "luftansaug_2": {
+        "name": "Air Inlet Temperature 2 (B46)"
+      },
       "wp_vorlauf": {
         "name": "Heat Pump Flow Temperature (B33)"
       },

@@ -58,6 +58,9 @@
       "luftansaug": {
         "name": "Luftansaugtemperatur (B37)"
       },
+      "luftansaug_2": {
+        "name": "Luftansaugtemperatur 2 (B46)"
+      },
       "wp_vorlauf": {
         "name": "Wärmepumpenvorlauftemperatur (B33)"
       },
