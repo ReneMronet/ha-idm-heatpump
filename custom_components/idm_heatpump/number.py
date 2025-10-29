@@ -2,7 +2,7 @@
 """
 iDM Wärmepumpe (Modbus TCP)
 Version: v1.6 (Dokumentations-Update)
-Stand: 2025-09-29
+Stand: 2025-10-29
 """
 
 import logging
