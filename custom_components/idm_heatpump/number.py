@@ -1,8 +1,8 @@
 # Datei: number.py
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v1.5 (Dokumentations-Update)
-Stand: 2025-09-24
+Version: v1.6 (Dokumentations-Update)
+Stand: 2025-09-29
 """
 
 import logging
@@ -50,11 +50,11 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
         # Warmwasser (UCHAR)
         IDMSollTempUcharNumber("idm_ww_target", "ww_target", REG_WW_TARGET,
-                               35, 60, 1, 46, client, host, interval),
+                               30, 60, 1, 46, client, host, interval),
         IDMSollTempUcharNumber("idm_ww_start", "ww_start", REG_WW_START,
                                30, 50, 1, 46, client, host, interval),
         IDMSollTempUcharNumber("idm_ww_stop", "ww_stop", REG_WW_STOP,
-                               46, 53, 1, 50, client, host, interval),
+                               46, 67, 1, 50, client, host, interval),
     ]
 
     async_add_entities(entities)
