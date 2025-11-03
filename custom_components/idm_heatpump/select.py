@@ -1,8 +1,11 @@
 # Datei: select.py
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v1.4 (Dokumentations-Update)
-Stand: 2025-09-24
+Version: v1.5
+Stand: 2025-11-03
+
+Änderungen v1.5:
+- Für Betriebsart System (Reg. 1005) Zusatzinfo als Attribut 'hinweis' je nach gewählter Option.
 """
 
 import logging
@@ -26,8 +29,19 @@ SYSTEM_OPTIONS = {
     "Standby": 0,
     "Automatik": 1,
     "Abwesend": 2,
+    "Urlaub": 3,
     "Nur Warmwasser": 4,
     "Nur Heizen/Kühlen": 5,
+}
+
+# Hinweis-Texte für die Systembetriebsart
+SYSTEM_INFO = {
+    "Standby": "Gerät auf Standby. Frostschutz ist aktiv.",
+    "Automatik": "Bei Einstellung „Automatik“ läuft das System nach den eingestellten Heiz-, Kühl- und Warmwasserladezeiten.",
+    "Abwesend": "Bei Einstellung „Abwesend“ läuft das System im Eco-Betrieb. Räume mit Eco-Temperatur. Warmwasser gemäß eingestellten Ladezeiten.",
+    "Urlaub": "Bei Einstellung „Urlaub“ läuft das System für Heizen und Kühlen im Eco-Betrieb. Die Warmwasserladung kann ein-/ausgeschaltet werden.",
+    "Nur Warmwasser": "Bei der Einstellung „Nur Warmwasser“ läuft die Wärmepumpe nur für Warmwasserladung ohne Heizbetrieb.",
+    "Nur Heizen/Kühlen": "Bei der Einstellung „Nur Heizen/Kühlen“ arbeitet die Anlage nur für Raumheizen bzw. aktives Kühlen. Keine Warmwasserladung.",
 }
 
 HK_OPTIONS = {
@@ -66,6 +80,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 host=host,
                 register=REG_SYSTEM_MODE,
                 options_map=SYSTEM_OPTIONS,
+                info_map=SYSTEM_INFO,          # Hinweis-Texte nur für Systemmodus
                 interval=interval,
             ),
             _ModeSelect(
@@ -75,6 +90,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 host=host,
                 register=REG_HKA_MODE,
                 options_map=HK_OPTIONS,
+                info_map=None,                 # keine Zusatzinfos
                 interval=interval,
             ),
             _ModeSelect(
@@ -84,6 +100,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 host=host,
                 register=REG_HKC_MODE,
                 options_map=HK_OPTIONS,
+                info_map=None,                 # keine Zusatzinfos
                 interval=interval,
             ),
             _ModeSelect(
@@ -93,6 +110,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 host=host,
                 register=REG_SOLAR_MODE,
                 options_map=SOLAR_OPTIONS,
+                info_map=None,                 # keine Zusatzinfos
                 interval=interval,
             ),
         ]
@@ -104,13 +122,14 @@ class _ModeSelect(SelectEntity):
     _attr_entity_category = EntityCategory.CONFIG
     _attr_has_entity_name = True
 
-    def __init__(self, unique_id, translation_key, client, host, register, options_map, interval):
+    def __init__(self, unique_id, translation_key, client, host, register, options_map, info_map, interval):
         self._attr_unique_id = unique_id
         self._attr_translation_key = translation_key
         self._client = client
         self._host = host
         self._register = register
         self._options_map = options_map
+        self._info_map = info_map or {}
         self._current_value = None
         self._attr_scan_interval = timedelta(seconds=interval)
 
@@ -136,6 +155,13 @@ class _ModeSelect(SelectEntity):
             await self._client.write_uchar(self._register, code)
             self._current_value = option
             self.async_write_ha_state()
+
+    @property
+    def extra_state_attributes(self):
+        # Zusatzhinweis nur für Systemmodus (Reg. 1005) bzw. wenn info_map gesetzt ist
+        if self._current_value in self._info_map:
+            return {"hinweis": self._info_map[self._current_value]}
+        return {}
 
     @property
     def device_info(self):
