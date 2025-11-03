@@ -1,11 +1,12 @@
 # Datei: select.py
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v1.5
+Version: v1.6
 Stand: 2025-11-03
 
-Änderungen v1.5:
-- Für Betriebsart System (Reg. 1005) Zusatzinfo als Attribut 'hinweis' je nach gewählter Option.
+Änderungen v1.6:
+- Dynamisches Icon je nach Betriebsart für Reg. 1005.
+- Hinweis-Attribut unverändert.
 """
 
 import logging
@@ -44,6 +45,16 @@ SYSTEM_INFO = {
     "Nur Heizen/Kühlen": "Bei der Einstellung „Nur Heizen/Kühlen“ arbeitet die Anlage nur für Raumheizen bzw. aktives Kühlen. Keine Warmwasserladung.",
 }
 
+# Icons pro Systemmodus
+SYSTEM_ICONS = {
+    "Standby": "mdi:power-standby",
+    "Automatik": "mdi:home-account",
+    "Abwesend": "mdi:home-thermometer-outline",
+    "Urlaub": "mdi:bag-suitcase-outline",
+    "Nur Warmwasser": "mdi:water-thermometer",
+    "Nur Heizen/Kühlen": "mdi:heat-wave",  # alternativ: mdi:radiator / mdi:snowflake
+}
+
 HK_OPTIONS = {
     "Aus": 0,
     "Zeitprogramm": 1,
@@ -80,7 +91,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 host=host,
                 register=REG_SYSTEM_MODE,
                 options_map=SYSTEM_OPTIONS,
-                info_map=SYSTEM_INFO,          # Hinweis-Texte nur für Systemmodus
+                info_map=SYSTEM_INFO,
+                icon_map=SYSTEM_ICONS,      # dynamisches Icon nur für Systemmodus
                 interval=interval,
             ),
             _ModeSelect(
@@ -90,7 +102,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 host=host,
                 register=REG_HKA_MODE,
                 options_map=HK_OPTIONS,
-                info_map=None,                 # keine Zusatzinfos
+                info_map=None,
+                icon_map=None,
                 interval=interval,
             ),
             _ModeSelect(
@@ -100,7 +113,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 host=host,
                 register=REG_HKC_MODE,
                 options_map=HK_OPTIONS,
-                info_map=None,                 # keine Zusatzinfos
+                info_map=None,
+                icon_map=None,
                 interval=interval,
             ),
             _ModeSelect(
@@ -110,7 +124,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 host=host,
                 register=REG_SOLAR_MODE,
                 options_map=SOLAR_OPTIONS,
-                info_map=None,                 # keine Zusatzinfos
+                info_map=None,
+                icon_map=None,
                 interval=interval,
             ),
         ]
@@ -122,7 +137,7 @@ class _ModeSelect(SelectEntity):
     _attr_entity_category = EntityCategory.CONFIG
     _attr_has_entity_name = True
 
-    def __init__(self, unique_id, translation_key, client, host, register, options_map, info_map, interval):
+    def __init__(self, unique_id, translation_key, client, host, register, options_map, info_map, icon_map, interval):
         self._attr_unique_id = unique_id
         self._attr_translation_key = translation_key
         self._client = client
@@ -130,6 +145,7 @@ class _ModeSelect(SelectEntity):
         self._register = register
         self._options_map = options_map
         self._info_map = info_map or {}
+        self._icon_map = icon_map or {}
         self._current_value = None
         self._attr_scan_interval = timedelta(seconds=interval)
 
@@ -158,10 +174,16 @@ class _ModeSelect(SelectEntity):
 
     @property
     def extra_state_attributes(self):
-        # Zusatzhinweis nur für Systemmodus (Reg. 1005) bzw. wenn info_map gesetzt ist
         if self._current_value in self._info_map:
             return {"hinweis": self._info_map[self._current_value]}
         return {}
+
+    @property
+    def icon(self):
+        # dynamisches Icon je nach aktuellem Modus
+        if self._current_value in self._icon_map:
+            return self._icon_map[self._current_value]
+        return "mdi:tune"
 
     @property
     def device_info(self):
