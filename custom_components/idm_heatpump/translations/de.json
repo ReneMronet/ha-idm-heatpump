@@ -179,6 +179,12 @@
       "hkc_temp_eco": {
         "name": "HK C Solltemperatur Eco"
       },
+      "hka_parallel": {
+        "name": "Parallelverschiebung HK A (HKA03)"
+      },
+      "hkc_parallel": {
+        "name": "Parallelverschiebung HK C (HKC03)"
+      },
       "ww_target": {
         "name": "WW-Solltemperatur"
       },

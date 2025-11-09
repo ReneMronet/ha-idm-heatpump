@@ -1,14 +1,18 @@
 # Datei: number.py
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v1.6 (Dokumentations-Update)
-Stand: 2025-10-29
+Version: v1.7
+Stand: 2025-11-09
+
+Änderungen v1.7:
+- Neue Number-Entities: Parallelverschiebung HK A (1505) und HK C (1507), 0..30 °C, Schritt 1, Default 0
 """
 
 import logging
 from datetime import timedelta
 from homeassistant.components.number import NumberEntity
 from homeassistant.const import UnitOfTemperature
+
 from .const import (
     DOMAIN,
     CONF_UNIT_ID,
@@ -16,16 +20,18 @@ from .const import (
     REG_WW_TARGET,
     REG_WW_START,
     REG_WW_STOP,
+    REG_HKA_PARALLEL,
+    REG_HKC_PARALLEL,
 )
 from .modbus_handler import IDMModbusHandler
 
 _LOGGER = logging.getLogger(__name__)
 
-# Register-Adressen Heizkreise
+# Register-Adressen Heizkreise (Vorlauf-Solltemperaturen, FLOAT)
 REG_HKA_NORMAL = 1401
 REG_HKC_NORMAL = 1405
-REG_HKA_ECO = 1415
-REG_HKC_ECO = 1419
+REG_HKA_ECO    = 1415
+REG_HKC_ECO    = 1419
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
@@ -47,6 +53,12 @@ async def async_setup_entry(hass, entry, async_add_entities):
                                10, 25, 0.5, 18, client, host, interval),
         IDMSollTempFloatNumber("idm_hkc_temp_eco", "hkc_temp_eco", REG_HKC_ECO,
                                10, 25, 0.5, 18, client, host, interval),
+
+        # Parallelverschiebung Heizkreise (UCHAR 0..30 °C)
+        IDMSollTempUcharNumber("idm_hka_parallel", "hka_parallel", REG_HKA_PARALLEL,
+                               0, 30, 1, 0, client, host, interval),
+        IDMSollTempUcharNumber("idm_hkc_parallel", "hkc_parallel", REG_HKC_PARALLEL,
+                               0, 30, 1, 0, client, host, interval),
 
         # Warmwasser (UCHAR)
         IDMSollTempUcharNumber("idm_ww_target", "ww_target", REG_WW_TARGET,
@@ -109,7 +121,7 @@ class IDMSollTempFloatNumber(NumberEntity):
 
 
 # -------------------------------------------------------------------
-# UCHAR-Nummern (Warmwasser-Sollwerte)
+# UCHAR-Nummern (WW + Parallelverschiebung)
 # -------------------------------------------------------------------
 class IDMSollTempUcharNumber(NumberEntity):
     _attr_has_entity_name = True

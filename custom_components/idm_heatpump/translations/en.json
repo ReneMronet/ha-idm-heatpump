@@ -179,6 +179,12 @@
       "hkc_temp_eco": {
         "name": "HC C Setpoint Eco"
       },
+      "hka_parallel": {
+        "name": "HC A Parallel Shift (HKA03)"
+      },
+      "hkc_parallel": {
+        "name": "HC C Parallel Shift (HKC03)"
+      },
       "ww_target": {
         "name": "DHW Target Temperature"
       },
