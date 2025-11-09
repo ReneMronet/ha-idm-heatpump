@@ -37,177 +37,71 @@
   },
   "entity": {
     "sensor": {
-      "aussentemperatur": {
-        "name": "Outdoor Temperature (B32)"
-      },
-      "aussentemperatur_gemittelt": {
-        "name": "Average Outdoor Temperature (B32a)"
-      },
-      "waermespeicher": {
-        "name": "Heat Buffer Temperature (B41)"
-      },
-      "ww_oben": {
-        "name": "Hot Water Top (B43)"
-      },
-      "ww_unten": {
-        "name": "Hot Water Bottom (B44)"
-      },
-      "ww_zapftemp": {
-        "name": "Hot Water Tap Temperature (B46)"
-      },
-      "luftansaug": {
-        "name": "Air Inlet Temperature (B37)"
-      },
-      "luftansaug_2": {
-        "name": "Air Inlet Temperature 2 (B46)"
-      },
-      "wp_vorlauf": {
-        "name": "Heat Pump Flow Temperature (B33)"
-      },
-      "ruecklauf": {
-        "name": "Return Temperature (B34)"
-      },
-      "ladefuehler": {
-        "name": "Loading Sensor (B45)"
-      },
-      "durchfluss": {
-        "name": "Heating Flow Rate (B2)"
-      },
-      "hka_vorlauf": {
-        "name": "Heating Circuit A Flow Temperature (B49)"
-      },
-      "hka_soll_vorlauf": {
-        "name": "Heating Circuit A Target Flow Temperature (B49s)"
-      },
-      "hkc_vorlauf": {
-        "name": "Heating Circuit C Flow Temperature (B59)"
-      },
-      "hkc_soll_vorlauf": {
-        "name": "Heating Circuit C Target Flow Temperature (B59s)"
-      },
-      "pv_ueberschuss": {
-        "name": "PV Surplus (PV74)"
-      },
-      "e_heizstab": {
-        "name": "Electric Heater Power (PV76)"
-      },
-      "pv_produktion": {
-        "name": "PV Production (PV78)"
-      },
-      "hausverbrauch": {
-        "name": "House Consumption (PV82)"
-      },
-      "batterie_entladung": {
-        "name": "Battery Discharge (PV84)"
-      },
-      "batterie_fuellstand": {
-        "name": "Battery State of Charge (PV86)"
-      },
-      "status_warmepumpe": {
-        "name": "Heat Pump Status (B19)"
-      },
-      "hka_aktive_betriebsart": {
-        "name": "Active Mode Heating Circuit A (B55)"
-      },
-      "hkc_aktive_betriebsart": {
-        "name": "Active Mode Heating Circuit C (B65)"
-      },
-      "wp_power": {
-        "name": "Electrical Total Power Heat Pump (Reg. 4122)"
-      },
-      "en_heizen": {
-        "name": "Energy Heating (Reg. 1748)"
-      },
-      "en_gesamt": {
-        "name": "Energy Total (Reg. 1750)"
-      },
-      "en_kuehlen": {
-        "name": "Energy Cooling (Reg. 1752)"
-      },
-      "en_warmwasser": {
-        "name": "Energy Domestic Hot Water (Reg. 1754)"
-      },
-      "en_abtauung": {
-        "name": "Energy Defrost (Reg. 1756)"
-      },
-      "en_passivkuehlung": {
-        "name": "Energy Passive Cooling (Reg. 1758)"
-      },
-      "en_solar": {
-        "name": "Energy Solar (Reg. 1760)"
-      },
-      "en_eheizer": {
-        "name": "Energy Electric Heater (Reg. 1762)"
-      },
-      "thermische_leistung": {
-        "name": "Thermal Power (Reg. 1790)"
-      },
-      "solar_leistung": {
-        "name": "Solar Power (Reg. 1792)"
-      },
-      "solar_kollektor": {
-        "name": "Solar Collector Temperature (B73)"
-      },
-      "solar_ruecklauf": {
-        "name": "Solar Collector Return Temperature (B75)"
-      },
-      "solar_ladetemp": {
-        "name": "Solar Charge Temperature (B74)"
-      }
+      "aussentemperatur": { "name": "Outdoor Temperature (B32)" },
+      "aussentemperatur_gemittelt": { "name": "Average Outdoor Temperature (B32a)" },
+      "waermespeicher": { "name": "Heat Buffer Temperature (B41)" },
+      "ww_oben": { "name": "Hot Water Top (B43)" },
+      "ww_unten": { "name": "Hot Water Bottom (B44)" },
+      "ww_zapftemp": { "name": "Hot Water Tap Temperature (B46)" },
+      "luftansaug": { "name": "Air Inlet Temperature (B37)" },
+      "luftansaug_2": { "name": "Air Inlet Temperature 2 (B46)" },
+      "wp_vorlauf": { "name": "Heat Pump Flow Temperature (B33)" },
+      "ruecklauf": { "name": "Return Temperature (B34)" },
+      "ladefuehler": { "name": "Loading Sensor (B45)" },
+      "durchfluss": { "name": "Heating Flow Rate (B2)" },
+      "hka_vorlauf": { "name": "Heating Circuit A Flow Temperature (B49)" },
+      "hka_soll_vorlauf": { "name": "Heating Circuit A Target Flow Temperature (B49s)" },
+      "hkc_vorlauf": { "name": "Heating Circuit C Flow Temperature (B59)" },
+      "hkc_soll_vorlauf": { "name": "Heating Circuit C Target Flow Temperature (B59s)" },
+      "pv_ueberschuss": { "name": "PV Surplus (PV74)" },
+      "e_heizstab": { "name": "Electric Heater Power (PV76)" },
+      "pv_produktion": { "name": "PV Production (PV78)" },
+      "hausverbrauch": { "name": "House Consumption (PV82)" },
+      "batterie_entladung": { "name": "Battery Discharge (PV84)" },
+      "batterie_fuellstand": { "name": "Battery State of Charge (PV86)" },
+      "status_warmepumpe": { "name": "Heat Pump Status (B19)" },
+      "hka_aktive_betriebsart": { "name": "Active Mode Heating Circuit A (B55)" },
+      "hkc_aktive_betriebsart": { "name": "Active Mode Heating Circuit C (B65)" },
+      "wp_power": { "name": "Electrical Total Power Heat Pump (Reg. 4122)" },
+      "en_heizen": { "name": "Energy Heating (Reg. 1748)" },
+      "en_gesamt": { "name": "Energy Total (Reg. 1750)" },
+      "en_kuehlen": { "name": "Energy Cooling (Reg. 1752)" },
+      "en_warmwasser": { "name": "Energy Domestic Hot Water (Reg. 1754)" },
+      "en_abtauung": { "name": "Energy Defrost (Reg. 1756)" },
+      "en_passivkuehlung": { "name": "Energy Passive Cooling (Reg. 1758)" },
+      "en_solar": { "name": "Energy Solar (Reg. 1760)" },
+      "en_eheizer": { "name": "Energy Electric Heater (Reg. 1762)" },
+      "thermische_leistung": { "name": "Thermal Power (Reg. 1790)" },
+      "solar_leistung": { "name": "Solar Power (Reg. 1792)" },
+      "solar_kollektor": { "name": "Solar Collector Temperature (B73)" },
+      "solar_ruecklauf": { "name": "Solar Collector Return Temperature (B75)" },
+      "solar_ladetemp": { "name": "Solar Charge Temperature (B74)" }
     },
     "switch": {
-      "heat_request": {
-        "name": "Heating Request"
-      },
-      "ww_request": {
-        "name": "Hot Water Request"
-      },
-      "ww_onetime": {
-        "name": "One-time Hot Water Charging"
-      }
+      "heat_request": { "name": "Heating Request" },
+      "ww_request": { "name": "Hot Water Request" },
+      "ww_onetime": { "name": "One-time Hot Water Charging" }
     },
     "number": {
-      "hka_temp_normal": {
-        "name": "HC A Setpoint Normal"
-      },
-      "hkc_temp_normal": {
-        "name": "HC C Setpoint Normal"
-      },
-      "hka_temp_eco": {
-        "name": "HC A Setpoint Eco"
-      },
-      "hkc_temp_eco": {
-        "name": "HC C Setpoint Eco"
-      },
-      "hka_parallel": {
-        "name": "HC A Parallel Shift (HKA03)"
-      },
-      "hkc_parallel": {
-        "name": "HC C Parallel Shift (HKC03)"
-      },
-      "ww_target": {
-        "name": "DHW Target Temperature"
-      },
-      "ww_start": {
-        "name": "DHW Start Temperature"
-      },
-      "ww_stop": {
-        "name": "DHW Stop Temperature"
-      }
+      "hka_temp_normal": { "name": "HC A Setpoint Normal" },
+      "hkc_temp_normal": { "name": "HC C Setpoint Normal" },
+      "hka_temp_eco": { "name": "HC A Setpoint Eco" },
+      "hkc_temp_eco": { "name": "HC C Setpoint Eco" },
+      "hka_curve": { "name": "HC A Heating Curve (HKA10)" },
+      "hkc_curve": { "name": "HC C Heating Curve (HKC10)" },
+      "hka_parallel": { "name": "HC A Parallel Shift (HKA03)" },
+      "hkc_parallel": { "name": "HC C Parallel Shift (HKC03)" },
+      "hka_heat_limit": { "name": "HC A Heating Limit (HKA08)" },
+      "hkc_heat_limit": { "name": "HC C Heating Limit (HKC08)" },
+      "ww_target": { "name": "DHW Target Temperature" },
+      "ww_start": { "name": "DHW Start Temperature" },
+      "ww_stop": { "name": "DHW Stop Temperature" }
     },
     "select": {
-      "betriebsart": {
-        "name": "System Operating Mode"
-      },
-      "hka_betriebsart": {
-        "name": "Heating Circuit A Mode"
-      },
-      "hkc_betriebsart": {
-        "name": "Heating Circuit C Mode"
-      },
-      "solar_betriebsart": {
-        "name": "Solar Operating Mode"
-      }
+      "betriebsart": { "name": "System Operating Mode" },
+      "hka_betriebsart": { "name": "Heating Circuit A Mode" },
+      "hkc_betriebsart": { "name": "Heating Circuit C Mode" },
+      "solar_betriebsart": { "name": "Solar Operating Mode" }
     }
   }
 }

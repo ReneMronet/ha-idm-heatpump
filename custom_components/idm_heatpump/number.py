@@ -1,11 +1,11 @@
-# Datei: number.py
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v1.7
+Version: v1.9
 Stand: 2025-11-09
 
-Änderungen v1.7:
-- Neue Number-Entities: Parallelverschiebung HK A (1505) und HK C (1507), 0..30 °C, Schritt 1, Default 0
+Änderungen v1.9:
+- Neue Number-Entities (FLOAT): Heizkurve HK A (1429) und HK C (1433), 0.0..3.5, Schritt 0.1, Default 0.6
+- Bestand: Heizgrenze HK A/C (1442/1444) und Parallelverschiebung HK A/C (1505/1507)
 """
 
 import logging
@@ -22,6 +22,10 @@ from .const import (
     REG_WW_STOP,
     REG_HKA_PARALLEL,
     REG_HKC_PARALLEL,
+    REG_HKA_HEATLIMIT,
+    REG_HKC_HEATLIMIT,
+    REG_HKA_CURVE,
+    REG_HKC_CURVE,
 )
 from .modbus_handler import IDMModbusHandler
 
@@ -54,11 +58,23 @@ async def async_setup_entry(hass, entry, async_add_entities):
         IDMSollTempFloatNumber("idm_hkc_temp_eco", "hkc_temp_eco", REG_HKC_ECO,
                                10, 25, 0.5, 18, client, host, interval),
 
+        # Heizkurve Heizkreise (FLOAT 0.0..3.5)
+        IDMSollTempFloatNumber("idm_hka_curve", "hka_curve", REG_HKA_CURVE,
+                               0.0, 3.5, 0.1, 0.6, client, host, interval),
+        IDMSollTempFloatNumber("idm_hkc_curve", "hkc_curve", REG_HKC_CURVE,
+                               0.0, 3.5, 0.1, 0.6, client, host, interval),
+
         # Parallelverschiebung Heizkreise (UCHAR 0..30 °C)
         IDMSollTempUcharNumber("idm_hka_parallel", "hka_parallel", REG_HKA_PARALLEL,
                                0, 30, 1, 0, client, host, interval),
         IDMSollTempUcharNumber("idm_hkc_parallel", "hkc_parallel", REG_HKC_PARALLEL,
                                0, 30, 1, 0, client, host, interval),
+
+        # Heizgrenzen Heizkreise (UCHAR 0..50 °C)
+        IDMSollTempUcharNumber("idm_hka_heat_limit", "hka_heat_limit", REG_HKA_HEATLIMIT,
+                               0, 50, 1, 15, client, host, interval),
+        IDMSollTempUcharNumber("idm_hkc_heat_limit", "hkc_heat_limit", REG_HKC_HEATLIMIT,
+                               0, 50, 1, 15, client, host, interval),
 
         # Warmwasser (UCHAR)
         IDMSollTempUcharNumber("idm_ww_target", "ww_target", REG_WW_TARGET,
@@ -73,7 +89,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
 
 # -------------------------------------------------------------------
-# FLOAT-Nummern (HK A/C Solltemperaturen)
+# FLOAT-Nummern (HK A/C Solltemperaturen, Heizkurve)
 # -------------------------------------------------------------------
 class IDMSollTempFloatNumber(NumberEntity):
     _attr_has_entity_name = True
@@ -87,17 +103,18 @@ class IDMSollTempFloatNumber(NumberEntity):
         self._register = register
         self._client = client
         self._host = host
-        self._attr_native_min_value = min_value
-        self._attr_native_max_value = max_value
-        self._attr_native_step = step
+        self._attr_native_min_value = float(min_value)
+        self._attr_native_max_value = float(max_value)
+        self._attr_native_step = float(step)
         self._attr_native_value = None
-        self._default = default
+        self._default = float(default)
         self._attr_scan_interval = timedelta(seconds=interval)
 
     async def async_update(self):
         value = await self._client.read_float(self._register)
         if value is not None:
-            self._attr_native_value = round(value, 1)
+            # 1 Nachkommastelle reicht für Heizkurve
+            self._attr_native_value = round(float(value), 1)
 
     async def async_set_native_value(self, value: float):
         if value != self._attr_native_value:
@@ -121,7 +138,7 @@ class IDMSollTempFloatNumber(NumberEntity):
 
 
 # -------------------------------------------------------------------
-# UCHAR-Nummern (WW + Parallelverschiebung)
+# UCHAR-Nummern (WW + Parallelverschiebung + Heizgrenze)
 # -------------------------------------------------------------------
 class IDMSollTempUcharNumber(NumberEntity):
     _attr_has_entity_name = True
@@ -135,17 +152,17 @@ class IDMSollTempUcharNumber(NumberEntity):
         self._register = register
         self._client = client
         self._host = host
-        self._attr_native_min_value = min_value
-        self._attr_native_max_value = max_value
-        self._attr_native_step = step
+        self._attr_native_min_value = int(min_value)
+        self._attr_native_max_value = int(max_value)
+        self._attr_native_step = int(step)
         self._attr_native_value = None
-        self._default = default
+        self._default = int(default)
         self._attr_scan_interval = timedelta(seconds=interval)
 
     async def async_update(self):
         value = await self._client.read_uchar(self._register)
         if value is not None:
-            self._attr_native_value = value
+            self._attr_native_value = int(value)
 
     async def async_set_native_value(self, value: float):
         if value != self._attr_native_value:

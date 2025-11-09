@@ -37,177 +37,71 @@
   },
   "entity": {
     "sensor": {
-      "aussentemperatur": {
-        "name": "Außentemperatur (B32)"
-      },
-      "aussentemperatur_gemittelt": {
-        "name": "Gemittelte Außentemperatur (B32a)"
-      },
-      "waermespeicher": {
-        "name": "Wärmespeichertemperatur (B41)"
-      },
-      "ww_oben": {
-        "name": "Warmwasser oben (B43)"
-      },
-      "ww_unten": {
-        "name": "Warmwasser unten (B44)"
-      },
-      "ww_zapftemp": {
-        "name": "Warmwasserzapftemperatur (B46)"
-      },
-      "luftansaug": {
-        "name": "Luftansaugtemperatur (B37)"
-      },
-      "luftansaug_2": {
-        "name": "Luftansaugtemperatur 2 (B46)"
-      },
-      "wp_vorlauf": {
-        "name": "Wärmepumpenvorlauftemperatur (B33)"
-      },
-      "ruecklauf": {
-        "name": "Rücklauftemperatur (B34)"
-      },
-      "ladefuehler": {
-        "name": "Ladefühler (B45)"
-      },
-      "durchfluss": {
-        "name": "Durchfluss Heizung (B2)"
-      },
-      "hka_vorlauf": {
-        "name": "Heizkreis A Vorlauftemperatur (B49)"
-      },
-      "hka_soll_vorlauf": {
-        "name": "Heizkreis A Soll-Vorlauftemperatur (B49s)"
-      },
-      "hkc_vorlauf": {
-        "name": "Heizkreis C Vorlauftemperatur (B59)"
-      },
-      "hkc_soll_vorlauf": {
-        "name": "Heizkreis C Soll-Vorlauftemperatur (B59s)"
-      },
-      "pv_ueberschuss": {
-        "name": "PV-Überschuss (PV74)"
-      },
-      "e_heizstab": {
-        "name": "Leistung E-Heizstab (PV76)"
-      },
-      "pv_produktion": {
-        "name": "PV-Produktion (PV78)"
-      },
-      "hausverbrauch": {
-        "name": "Hausverbrauch (PV82)"
-      },
-      "batterie_entladung": {
-        "name": "Batterieentladung (PV84)"
-      },
-      "batterie_fuellstand": {
-        "name": "Batteriefüllstand (PV86)"
-      },
-      "status_warmepumpe": {
-        "name": "Status Wärmepumpe (B19)"
-      },
-      "hka_aktive_betriebsart": {
-        "name": "Aktive Betriebsart Heizkreis A (B55)"
-      },
-      "hkc_aktive_betriebsart": {
-        "name": "Aktive Betriebsart Heizkreis C (B65)"
-      },
-      "wp_power": {
-        "name": "Elektrische Gesamtleistung Wärmepumpe (Reg. 4122)"
-      },
-      "en_heizen": {
-        "name": "Wärmemenge Heizen (Reg. 1748)"
-      },
-      "en_gesamt": {
-        "name": "Wärmemenge Gesamt (Reg. 1750)"
-      },
-      "en_kuehlen": {
-        "name": "Wärmemenge Kühlen (Reg. 1752)"
-      },
-      "en_warmwasser": {
-        "name": "Wärmemenge Warmwasser (Reg. 1754)"
-      },
-      "en_abtauung": {
-        "name": "Wärmemenge Abtauung (Reg. 1756)"
-      },
-      "en_passivkuehlung": {
-        "name": "Wärmemenge Passive Kühlung (Reg. 1758)"
-      },
-      "en_solar": {
-        "name": "Wärmemenge Solar (Reg. 1760)"
-      },
-      "en_eheizer": {
-        "name": "Wärmemenge Elektroheizeinsatz (Reg. 1762)"
-      },
-      "thermische_leistung": {
-        "name": "Thermische Momentanleistung (Reg. 1790)"
-      },
-      "solar_leistung": {
-        "name": "Momentanleistung Solar (Reg. 1792)"
-      },
-      "solar_kollektor": {
-        "name": "Solarkollektortemperatur (B73)"
-      },
-      "solar_ruecklauf": {
-        "name": "Solarkollektorrücklauftemperatur (B75)"
-      },
-      "solar_ladetemp": {
-        "name": "Solar-Ladetemperatur (B74)"
-      }
+      "aussentemperatur": { "name": "Außentemperatur (B32)" },
+      "aussentemperatur_gemittelt": { "name": "Gemittelte Außentemperatur (B32a)" },
+      "waermespeicher": { "name": "Wärmespeichertemperatur (B41)" },
+      "ww_oben": { "name": "Warmwasser oben (B43)" },
+      "ww_unten": { "name": "Warmwasser unten (B44)" },
+      "ww_zapftemp": { "name": "Warmwasserzapftemperatur (B46)" },
+      "luftansaug": { "name": "Luftansaugtemperatur (B37)" },
+      "luftansaug_2": { "name": "Luftansaugtemperatur 2 (B46)" },
+      "wp_vorlauf": { "name": "Wärmepumpenvorlauftemperatur (B33)" },
+      "ruecklauf": { "name": "Rücklauftemperatur (B34)" },
+      "ladefuehler": { "name": "Ladefühler (B45)" },
+      "durchfluss": { "name": "Durchfluss Heizung (B2)" },
+      "hka_vorlauf": { "name": "Heizkreis A Vorlauftemperatur (B49)" },
+      "hka_soll_vorlauf": { "name": "Heizkreis A Soll-Vorlauftemperatur (B49s)" },
+      "hkc_vorlauf": { "name": "Heizkreis C Vorlauftemperatur (B59)" },
+      "hkc_soll_vorlauf": { "name": "Heizkreis C Soll-Vorlauftemperatur (B59s)" },
+      "pv_ueberschuss": { "name": "PV-Überschuss (PV74)" },
+      "e_heizstab": { "name": "Leistung E-Heizstab (PV76)" },
+      "pv_produktion": { "name": "PV-Produktion (PV78)" },
+      "hausverbrauch": { "name": "Hausverbrauch (PV82)" },
+      "batterie_entladung": { "name": "Batterieentladung (PV84)" },
+      "batterie_fuellstand": { "name": "Batteriefüllstand (PV86)" },
+      "status_warmepumpe": { "name": "Status Wärmepumpe (B19)" },
+      "hka_aktive_betriebsart": { "name": "Aktive Betriebsart Heizkreis A (B55)" },
+      "hkc_aktive_betriebsart": { "name": "Aktive Betriebsart Heizkreis C (B65)" },
+      "wp_power": { "name": "Elektrische Gesamtleistung Wärmepumpe (Reg. 4122)" },
+      "en_heizen": { "name": "Wärmemenge Heizen (Reg. 1748)" },
+      "en_gesamt": { "name": "Wärmemenge Gesamt (Reg. 1750)" },
+      "en_kuehlen": { "name": "Wärmemenge Kühlen (Reg. 1752)" },
+      "en_warmwasser": { "name": "Wärmemenge Warmwasser (Reg. 1754)" },
+      "en_abtauung": { "name": "Wärmemenge Abtauung (Reg. 1756)" },
+      "en_passivkuehlung": { "name": "Wärmemenge Passive Kühlung (Reg. 1758)" },
+      "en_solar": { "name": "Wärmemenge Solar (Reg. 1760)" },
+      "en_eheizer": { "name": "Wärmemenge Elektroheizeinsatz (Reg. 1762)" },
+      "thermische_leistung": { "name": "Thermische Momentanleistung (Reg. 1790)" },
+      "solar_leistung": { "name": "Momentanleistung Solar (Reg. 1792)" },
+      "solar_kollektor": { "name": "Solarkollektortemperatur (B73)" },
+      "solar_ruecklauf": { "name": "Solarkollektorrücklauftemperatur (B75)" },
+      "solar_ladetemp": { "name": "Solar-Ladetemperatur (B74)" }
     },
     "switch": {
-      "heat_request": {
-        "name": "Heizungsanforderung"
-      },
-      "ww_request": {
-        "name": "Warmwasseranforderung"
-      },
-      "ww_onetime": {
-        "name": "Einmalige Warmwasserladung"
-      }
+      "heat_request": { "name": "Heizungsanforderung" },
+      "ww_request": { "name": "Warmwasseranforderung" },
+      "ww_onetime": { "name": "Einmalige Warmwasserladung" }
     },
     "number": {
-      "hka_temp_normal": {
-        "name": "HK A Solltemperatur Normal"
-      },
-      "hkc_temp_normal": {
-        "name": "HK C Solltemperatur Normal"
-      },
-      "hka_temp_eco": {
-        "name": "HK A Solltemperatur Eco"
-      },
-      "hkc_temp_eco": {
-        "name": "HK C Solltemperatur Eco"
-      },
-      "hka_parallel": {
-        "name": "Parallelverschiebung HK A (HKA03)"
-      },
-      "hkc_parallel": {
-        "name": "Parallelverschiebung HK C (HKC03)"
-      },
-      "ww_target": {
-        "name": "WW-Solltemperatur"
-      },
-      "ww_start": {
-        "name": "WW-Ladung Starttemperatur"
-      },
-      "ww_stop": {
-        "name": "WW-Ladung Stopp-Temperatur"
-      }
+      "hka_temp_normal": { "name": "HK A Solltemperatur Normal" },
+      "hkc_temp_normal": { "name": "HK C Solltemperatur Normal" },
+      "hka_temp_eco": { "name": "HK A Solltemperatur Eco" },
+      "hkc_temp_eco": { "name": "HK C Solltemperatur Eco" },
+      "hka_curve": { "name": "Heizkurve HK A (HKA10)" },
+      "hkc_curve": { "name": "Heizkurve HK C (HKC10)" },
+      "hka_parallel": { "name": "Parallelverschiebung HK A (HKA03)" },
+      "hkc_parallel": { "name": "Parallelverschiebung HK C (HKC03)" },
+      "hka_heat_limit": { "name": "Heizgrenze HK A (HKA08)" },
+      "hkc_heat_limit": { "name": "Heizgrenze HK C (HKC08)" },
+      "ww_target": { "name": "WW-Solltemperatur" },
+      "ww_start": { "name": "WW-Ladung Starttemperatur" },
+      "ww_stop": { "name": "WW-Ladung Stopp-Temperatur" }
     },
     "select": {
-      "betriebsart": {
-        "name": "Betriebsart System"
-      },
-      "hka_betriebsart": {
-        "name": "Betriebsart Heizkreis A"
-      },
-      "hkc_betriebsart": {
-        "name": "Betriebsart Heizkreis C"
-      },
-      "solar_betriebsart": {
-        "name": "Betriebsart Solar"
-      }
+      "betriebsart": { "name": "Betriebsart System" },
+      "hka_betriebsart": { "name": "Betriebsart Heizkreis A" },
+      "hkc_betriebsart": { "name": "Betriebsart Heizkreis C" },
+      "solar_betriebsart": { "name": "Betriebsart Solar" }
     }
   }
 }

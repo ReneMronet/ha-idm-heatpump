@@ -1,8 +1,13 @@
-# Datei: const.py
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v1.8
+Version: v2.0
 Stand: 2025-11-09
+
+Änderung v2.0:
+- REG_HKA_CURVE (1429) und REG_HKC_CURVE (1433) für Heizkurve HK A/C ergänzt
+
+Änderung v1.9:
+- REG_HKA_HEATLIMIT (1442) und REG_HKC_HEATLIMIT (1444) für Heizgrenze HK A/C ergänzt
 
 Änderung v1.8:
 - REG_HKA_PARALLEL (1505) und REG_HKC_PARALLEL (1507) für Parallelverschiebung HK A/C ergänzt
@@ -53,6 +58,10 @@ REG_HKA_ACTIVE_MODE = 1498  # (B55) Aktive Betriebsart Heizkreis A (UCHAR RO)
 REG_HKC_ACTIVE_MODE = 1500  # (B65) Aktive Betriebsart Heizkreis C (UCHAR RO)
 REG_HKA_PARALLEL = 1505     # (HKA03) Parallelverschiebung HK A [°C] (UCHAR RW, 0..30)
 REG_HKC_PARALLEL = 1507     # (HKC03) Parallelverschiebung HK C [°C] (UCHAR RW, 0..30)
+REG_HKA_HEATLIMIT = 1442    # (HKA08) Heizgrenze HK A [°C] (UCHAR RW, 0..50)
+REG_HKC_HEATLIMIT = 1444    # (HKC08) Heizgrenze HK C [°C] (UCHAR RW, 0..50)
+REG_HKA_CURVE = 1429        # (HKA10) Heizkurve HK A (FLOAT RW, 0.0..3.5)
+REG_HKC_CURVE = 1433        # (HKC10) Heizkurve HK C (FLOAT RW, 0.0..3.5)
 
 # Warmwasser Sollwerte (UCHAR RW)
 REG_WW_TARGET = 1032        # (FW030) Warmwasser-Solltemperatur [°C]
