@@ -1,8 +1,17 @@
 # Datei: sensor.py
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v1.29
-Stand: 2025-10-28
+Version: v1.33
+Stand: 2025-11-10
+
+Änderungen v1.33:
+- Interne Meldung (REG_INTERNAL_MESSAGE/1004) erweitert:
+  * Mapping MESSAGE_CODES (020–532) zu Klartext (Attribut code_text)
+  * Event bei Änderung: idm_internal_message_changed {code:int, text:str}
+  * Persistent Notification: Titel "iDM interne Meldung", Text "Code XYZ – <Beschreibung>"
+
+Änderungen v1.30:
+- Neuer Sensor idm_interne_meldung (UCHAR RO) für REG_INTERNAL_MESSAGE (1004), zeigt aktuelle NAVIGATOR-Meldungsnummer 020–999
 
 Änderungen v1.29:
 - Neuer Sensor idm_luftansaug_2 für REG_AIR_INLET_TEMP_2 (1064 / B46 Luftansaugtemperatur 2)
@@ -22,6 +31,7 @@ from homeassistant.const import (
     PERCENTAGE,
 )
 from homeassistant.helpers.entity import EntityCategory
+from homeassistant.components.persistent_notification import async_create as pn_create
 
 from .const import (
     # Temperaturen & WP
@@ -51,7 +61,8 @@ from .const import (
     REG_HAUSVERBRAUCH,
     REG_BATTERIE_ENTLADUNG,
     REG_BATTERIE_FUELLSTAND,
-    # Status & Leistung
+    # System/Status & Leistung
+    REG_INTERNAL_MESSAGE,
     REG_WP_STATUS,
     REG_WP_POWER,
     # Energiemengen & Leistungen
@@ -75,6 +86,195 @@ from .const import (
     DOMAIN,
 )
 from .modbus_handler import IDMModbusHandler
+
+
+# -------------------------------------------------------------------
+# NAVIGATOR-Meldungscode -> Klartext (020–532). 0 = Keine Meldung.
+# Quelle: vom Benutzer gelieferte Liste. Bereiche gruppiert.
+# -------------------------------------------------------------------
+MESSAGE_CODES = {
+    # 0
+    0: "Keine Meldung",
+
+    # 020–021
+    20: "Wärmepumpenvorlauf Maximaltemperatur",
+    21: "Wärmepumpenvorlauf Minimaltemperatur",
+
+    # 022 / 023 / 221 / 231
+    22: "Niederdruckstörung",
+    23: "Niederdruckstörung",
+    221: "Niederdruckstörung",
+    231: "Niederdruckstörung",
+
+    # 024 / 025 / 241 / 251
+    24: "Hochdruckstörung",
+    25: "Hochdruckstörung",
+    241: "Hochdruckstörung",
+    251: "Hochdruckstörung",
+
+    # 026 / 027
+    26: "Strömungsüberwachung",
+    27: "Strömungsüberwachung",
+
+    # 028 / 029 / 074 / 075
+    28: "Anlaufstrombegrenzer",
+    29: "Anlaufstrombegrenzer",
+    74: "Anlaufstrombegrenzer",
+    75: "Anlaufstrombegrenzer",
+
+    # 030 / 031
+    30: "Motorschutz Wärmequellenpumpe",
+    31: "Motorschutz Wärmequellenpumpe",
+
+    # 032 / 232
+    32: "Maximale Abtauzeit überschritten",
+    232: "Maximale Abtauzeit überschritten",
+
+    # 033 / 056 / 233 / 256
+    33: "Minimale Kondensatortemperatur unterschritten",
+    56: "Minimale Kondensatortemperatur unterschritten",
+    233: "Minimale Kondensatortemperatur unterschritten",
+    256: "Minimale Kondensatortemperatur unterschritten",
+
+    # 034 / 038 / 234 / 238
+    34: "Ventilatorfehler",
+    38: "Ventilatorfehler",
+    234: "Ventilatorfehler",
+    238: "Ventilatorfehler",
+
+    # 035 / 057 / 235 / 257
+    35: "Minimale Wärmepumpen- oder Wärmespeichertemperatur",
+    57: "Minimale Wärmepumpen- oder Wärmespeichertemperatur",
+    235: "Minimale Wärmepumpen- oder Wärmespeichertemperatur",
+    257: "Minimale Wärmepumpen- oder Wärmespeichertemperatur",
+
+    # 036
+    36: "E-Heizstab Überhitzung",
+
+    # 037 / 237
+    37: "Störung Ladepumpe",
+    237: "Störung Ladepumpe",
+
+    # 042 / 043 / 242 / 243
+    42: "Störung Heißgas",
+    43: "Störung Heißgas",
+    242: "Störung Heißgas",
+    243: "Störung Heißgas",
+
+    # 044 / 244
+    44: "Störung Durchflussüberwachung Heizungsseite",
+    244: "Störung Durchflussüberwachung Heizungsseite",
+
+    # 046 / 047 / 246 / 247
+    46: "Störung Heißgas",
+    47: "Störung Heißgas",
+    246: "Störung Heißgas",
+    247: "Störung Heißgas",
+
+    # 048 / 049
+    48: "Strömungsüberwachung",
+    49: "Strömungsüberwachung",
+
+    # 050 / 051
+    50: "Taupunktwächter angesprochen",
+    51: "Taupunktwächter angesprochen",
+
+    # 054 / 055
+    54: "Durchflussüberwachung heizungsseitig fehlerhaft",
+    55: "Durchflussüberwachung heizungsseitig fehlerhaft",
+
+    # 058 / 059
+    58: "Hochdruckstörung im Warmwasserbetrieb mit AQA",
+    59: "Hochdruckstörung im Warmwasserbetrieb mit AQA",
+
+    # 060 / 061 / 067
+    60: "Wärmequellentemperaturfehler",
+    61: "Wärmequellentemperaturfehler",
+    67: "Wärmequellentemperaturfehler",
+
+    # 062 / 063 / 262 / 263
+    62: "Wicklungsschutz",
+    63: "Wicklungsschutz",
+    262: "Wicklungsschutz",
+    263: "Wicklungsschutz",
+
+    # 069
+    69: "Wärmequellenrückspeisetemperatur zu hoch",
+
+    # 095 / 096 / 295 / 296
+    95: "Einsatzgrenzenstörung",
+    96: "Einsatzgrenzenstörung",
+    295: "Einsatzgrenzenstörung",
+    296: "Einsatzgrenzenstörung",
+
+    # 097
+    97: "Störung Schrittmotor",
+
+    # 100–199
+    **{i: "Fühlerstörung" for i in range(100, 200)},
+
+    # 203
+    203: "Solar-Log Update erforderlich",
+
+    # 236
+    236: "Sicherheitsabtauintervall zu kurz",
+
+    # 239
+    239: "Batteriefehler",
+
+    # 240
+    240: "Störung Spannungsversorgung",
+
+    # 265
+    265: "Estrich heizen abgebrochen / Solltemperatur nicht erreicht",
+
+    # 270
+    270: "Wärmepumpe verriegelt (Stufen längerfristig blockiert)",
+
+    # 271
+    271: "Bivalenz manuell aktiviert",
+
+    # 272
+    272: "Wärmepumpe verriegelt – Bivalenz im Notbetrieb aktiv",
+
+    # 280–283
+    280: "Kollektor Maximaltemperatur",
+    281: "Hygienik Maximaltemperatur",
+    282: "Wärmespeicher Maximaltemperatur",
+    283: "Wärmequellen Maximaltemperatur",
+
+    # 284–290
+    284: "Solarmodul nicht vorhanden",
+    285: "Minimale Ladetemperatur unterschritten",
+    286: "ISC-Modul nicht gefunden",
+    287: "Störung Kältespeicherpumpe",
+    288: "Störung Rückkühlpumpe",
+    289: "Störung Rückkühlfühler",
+    290: "Störung Rückkühlfühler",
+
+    # 291
+    291: "Maximale Rückkühltemperatur unterschritten",
+
+    # 293
+    293: "Minimale Wärmequellenaustrittstemperatur iDM Systemkühlung",
+
+    # 301 / 302
+    301: "Boostfunktion – Temperatur nicht erreicht",
+    302: "Legionellenfunktion – Temperatur nicht erreicht",
+
+    # 305–314
+    **{i: "Störung bei gemeinsamer Wärmequelle" for i in range(305, 315)},
+
+    # 400
+    400: "Kommunikation Kaskade",
+
+    # 516–532
+    **{i: "Kommunikations- oder Inverterstörung" for i in range(516, 533)},
+}
+
+
+def code_to_text(code: int) -> str:
+    return MESSAGE_CODES.get(code, "Unbekannte Meldung – siehe NAVIGATOR-Handbuch")
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
@@ -356,6 +556,17 @@ async def async_setup_entry(hass, entry, async_add_entities):
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
 
+        # System: Interne Meldung (UCHAR -> Code 020–999) mit Klartext und Events
+        IDMHeatpumpInternalMessageSensor(
+            "idm_interne_meldung",
+            "interne_meldung",
+            REG_INTERNAL_MESSAGE,
+            client,
+            host,
+            interval,
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+
         # Status WP
         IDMHeatpumpStatusSensor(
             "idm_status_warmepumpe",
@@ -584,6 +795,76 @@ class IDMHeatpumpFloatSensor(IDMBaseEntity, SensorEntity):
         value = await self._client.read_float(self._register)
         if value is not None:
             self._attr_native_value = value
+
+
+# -------------------------------------------------------------------
+# Interne Meldung (UCHAR) mit Klartext + Event/Notification
+# -------------------------------------------------------------------
+class IDMHeatpumpInternalMessageSensor(IDMBaseEntity, SensorEntity):
+    def __init__(
+        self,
+        unique_id,
+        translation_key,
+        register,
+        client,
+        host,
+        interval=30,
+        entity_category=None,
+    ):
+        super().__init__(host)
+        self._attr_unique_id = unique_id
+        self._attr_translation_key = translation_key
+        self._attr_has_entity_name = True
+        self._register = register
+        self._client = client
+        self._attr_native_value = None  # numerischer Code
+        self._last_code = None
+        self._attr_device_class = None
+        self._attr_state_class = SensorStateClass.MEASUREMENT
+        self._attr_scan_interval = timedelta(seconds=interval)
+        self._attr_entity_category = entity_category
+
+    async def async_update(self):
+        code = await self._client.read_uchar(self._register)
+        if code is None:
+            return
+
+        code = int(code)
+        self._attr_native_value = code
+
+        # Bei Änderung Event + Notification
+        if self._last_code is None:
+            self._last_code = code
+            return
+
+        if code != self._last_code:
+            text = code_to_text(code)
+            # Event
+            self.hass.bus.async_fire(
+                "idm_internal_message_changed",
+                {"code": code, "text": text},
+            )
+            # Persistent Notification
+            pn_create(
+                self.hass,
+                f"Code {code:03d} – {text}",
+                title="iDM interne Meldung",
+            )
+            self._last_code = code
+
+    @property
+    def extra_state_attributes(self):
+        code = self._attr_native_value
+        return {
+            "code_text": code_to_text(int(code)) if code is not None else None
+        }
+
+    @property
+    def icon(self):
+        code = self._attr_native_value or 0
+        if code == 0:
+            return "mdi:information-outline"
+        return "mdi:alert-circle-outline"
 
 
 # -------------------------------------------------------------------
