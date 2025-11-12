@@ -75,7 +75,8 @@
       "solar_leistung": { "name": "Solar Power (Reg. 1792)" },
       "solar_kollektor": { "name": "Solar Collector Temperature (B73)" },
       "solar_ruecklauf": { "name": "Solar Collector Return Temperature (B75)" },
-      "solar_ladetemp": { "name": "Solar Charge Temperature (B74)" }
+      "solar_ladetemp": { "name": "Solar Charge Temperature (B74)" },
+	  "betriebsart_warmepumpe": { "name": "Heat Pump Mode (1090)" }
     },
     "switch": {
       "heat_request": { "name": "Heating Request" },

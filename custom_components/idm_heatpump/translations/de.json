@@ -9,7 +9,7 @@
           "port": "TCP-Port",
           "unit_id": "Unit-ID",
           "update_interval": "Update-Intervall (Sekunden)"
-        }
+          }
       }
     },
     "error": {
@@ -75,7 +75,8 @@
       "solar_leistung": { "name": "Momentanleistung Solar (Reg. 1792)" },
       "solar_kollektor": { "name": "Solarkollektortemperatur (B73)" },
       "solar_ruecklauf": { "name": "Solarkollektorrücklauftemperatur (B75)" },
-      "solar_ladetemp": { "name": "Solar-Ladetemperatur (B74)" }
+      "solar_ladetemp": { "name": "Solar-Ladetemperatur (B74)" },
+	  "betriebsart_warmepumpe": { "name": "Betriebsart Wärmepumpe (1090)" }
     },
     "switch": {
       "heat_request": { "name": "Heizungsanforderung" },
