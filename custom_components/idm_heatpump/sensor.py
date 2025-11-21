@@ -487,9 +487,9 @@ class IDMHeatpumpWpModeSensor(IDMBaseEntity, SensorEntity):
             0: "Bereit",
             1: "Heizbetrieb",
             2: "Kühlbetrieb",
-            3: "Abtauung?",
+            3: "Unbekannt",
             4: "Warmwasser",
-            8: "Abtauung",
+            8: "Abtauen",
         }
         self._attr_native_value = mapping.get(value, f"Unbekannt ({value})")
 
@@ -499,7 +499,7 @@ class IDMHeatpumpWpModeSensor(IDMBaseEntity, SensorEntity):
             "Bereit": "mdi:power-standby",
             "Heizbetrieb": "mdi:radiator",
             "Kühlbetrieb": "mdi:snowflake",
-            "Abtauung": "mdi:water-sync",
+            "Abtauen": "mdi:water-sync",
             "Warmwasser": "mdi:water-boiler",
-            "Abtauung?": "mdi:alert-circle-outline",
+            "Unbekannt": "mdi:alert-circle-outline",
         }.get(self._attr_native_value, "mdi:alert-circle-outline")
