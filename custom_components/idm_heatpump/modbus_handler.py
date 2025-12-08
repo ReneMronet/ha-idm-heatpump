@@ -1,8 +1,12 @@
 # Datei: modbus_handler.py
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v3.0
-Stand: 2025-10-28
+Version: v3.1
+Stand: 2025-12-08
+
+Änderungen gegenüber v3.0:
+- read_uchar(): Fehler beim Lesen nur noch als DEBUG geloggt, um Log-Spam bei
+  nicht vorhandenen Registern (z. B. 1073) zu vermeiden.
 
 Änderungen gegenüber v2.9:
 - read_float(): kein künstliches Clamping mehr (Energiezähler >1000 kWh wären sonst 0.0)
@@ -97,11 +101,13 @@ class IDMModbusHandler:
         try:
             rr = await self._client.read_holding_registers(address=address, count=1)
             if rr is None or rr.isError():
-                _LOGGER.error("Fehler beim Lesen von UCHAR Reg %s", address)
+                # Nur Debug, da einige Register (z. B. 1073) nicht auf allen Anlagen existieren
+                _LOGGER.debug("Fehler beim Lesen von UCHAR Reg %s", address)
                 return None
             return rr.registers[0] & 0xFF
         except Exception as e:
-            _LOGGER.error("Exception UCHAR Reg %s: %s", address, e)
+            # Ebenfalls nur Debug, um kein Log-Spam zu erzeugen
+            _LOGGER.debug("Exception UCHAR Reg %s: %s", address, e)
             return None
 
     # ------------------------------------------------------------------

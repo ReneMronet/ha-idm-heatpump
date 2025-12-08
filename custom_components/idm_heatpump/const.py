@@ -53,7 +53,8 @@ REG_AIR_INLET_TEMP_2 = 1064  # (B46) Luftansaugtemperatur 2 [°C]
 REG_WP_VL_TEMP = 1050        # (B33) Wärmepumpenvorlauftemperatur [°C]
 REG_RETURN_TEMP = 1052       # (B34) Rücklauftemperatur [°C]
 REG_LOAD_TEMP = 1066         # (B45) Ladefühler [°C]
-REG_FLOW_SENSOR = 1072       # (B2) Durchfluss Heizung [l/min] (ohne Sensor ggf. -1)
+#REG_FLOW_SENSOR = 1072       # (B2) Durchfluss Heizung [l/min] (ohne Sensor ggf. -1)
+REG_FLOW_SENSOR = 1073       # (B2) Durchfluss Heizung [l/min] (ohne Sensor ggf. -1)
 
 # Heizkreise
 REG_HKA_VL = 1350            # (B49) Heizkreis A Vorlauftemperatur [°C]

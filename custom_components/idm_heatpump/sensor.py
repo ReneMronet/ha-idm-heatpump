@@ -1,7 +1,20 @@
+# Datei: sensor.py
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v1.34
-Stand: 2025-11-12
+Version: v1.37
+Stand: 2025-12-08
+
+Änderungen v1.37:
+- IDMHeatpumpFloatSensor.async_update(): Für Sensoren mit state_class TOTAL_INCREASING
+  werden negative Werte ignoriert (z. B. -1.0 bei nicht verwendeten Energiezählern),
+  um Recorder-Warnungen zu vermeiden.
+
+Änderungen v1.36:
+- Import-Fehler in sensor.py (unsichtbares Steuerzeichen vor 'from homeassistant.const')
+  behoben, damit alle Sensoren wieder geladen werden.
+
+Änderungen v1.35:
+- Sensor idm_durchfluss (B2 / REG_FLOW_SENSOR) auf UCHAR-Lesung mit 0,1-l/min-Skalierung umgestellt
 
 Änderungen v1.34:
 - Neuer Sensor idm_betriebsart_warmepumpe (UCHAR RO) für REG_WP_MODE (1090)
@@ -22,67 +35,68 @@ Stand: 2025-11-12
 """
 
 from datetime import timedelta
+
+from homeassistant.components.persistent_notification import async_create as pn_create
 from homeassistant.components.sensor import (
-    SensorEntity,
     SensorDeviceClass,
+    SensorEntity,
     SensorStateClass,
 )
 from homeassistant.const import (
-    UnitOfTemperature,
-    UnitOfPower,
-    UnitOfEnergy,
     PERCENTAGE,
+    UnitOfEnergy,
+    UnitOfPower,
+    UnitOfTemperature,
 )
 from homeassistant.helpers.entity import EntityCategory
-from homeassistant.components.persistent_notification import async_create as pn_create
 
 from .const import (
     # Temperaturen & WP
-    REG_OUTDOOR_TEMP,
-    REG_OUTDOOR_TEMP_AVG,
-    REG_HEATBUFFER_TEMP,
-    REG_WW_TOP_TEMP,
-    REG_WW_BOTTOM_TEMP,
-    REG_WW_TAP_TEMP,
     REG_AIR_INLET_TEMP,
     REG_AIR_INLET_TEMP_2,
-    REG_WP_VL_TEMP,
-    REG_RETURN_TEMP,
-    REG_LOAD_TEMP,
     REG_FLOW_SENSOR,
+    REG_HEATBUFFER_TEMP,
+    REG_LOAD_TEMP,
+    REG_OUTDOOR_TEMP,
+    REG_OUTDOOR_TEMP_AVG,
+    REG_RETURN_TEMP,
+    REG_WP_VL_TEMP,
+    REG_WW_BOTTOM_TEMP,
+    REG_WW_TAP_TEMP,
+    REG_WW_TOP_TEMP,
     # Heizkreise
+    REG_HKA_ACTIVE_MODE,
     REG_HKA_VL,
     REG_HKA_VL_SOLL,
+    REG_HKC_ACTIVE_MODE,
     REG_HKC_VL,
     REG_HKC_VL_SOLL,
-    REG_HKA_ACTIVE_MODE,
-    REG_HKC_ACTIVE_MODE,
     # PV/Batterie
-    REG_PV_SURPLUS,
-    REG_EHEIZSTAB,
-    REG_PV_PRODUKTION,
-    REG_HAUSVERBRAUCH,
     REG_BATTERIE_ENTLADUNG,
     REG_BATTERIE_FUELLSTAND,
+    REG_EHEIZSTAB,
+    REG_HAUSVERBRAUCH,
+    REG_PV_PRODUKTION,
+    REG_PV_SURPLUS,
     # System/Status & Leistung
     REG_INTERNAL_MESSAGE,
-    REG_WP_STATUS,
+    REG_THERMAL_POWER,
     REG_WP_POWER,
+    REG_WP_STATUS,
     # Energiemengen & Leistungen
-    REG_EN_HEATING,
-    REG_EN_TOTAL,
     REG_EN_COOLING,
-    REG_EN_DHW,
     REG_EN_DEFROST,
+    REG_EN_DHW,
+    REG_EN_EHEATER,
+    REG_EN_HEATING,
     REG_EN_PASSIVE_COOL,
     REG_EN_SOLAR,
-    REG_EN_EHEATER,
-    REG_THERMAL_POWER,
+    REG_EN_TOTAL,
     REG_SOLAR_POWER,
     # Solar-Temperaturen
+    REG_SOLAR_CHARGE_TEMP,
     REG_SOLAR_COLLECTOR_TEMP,
     REG_SOLAR_RETURN_TEMP,
-    REG_SOLAR_CHARGE_TEMP,
     # Setup
     CONF_UNIT_ID,
     DEFAULT_UNIT_ID,
@@ -92,7 +106,7 @@ from .const import (
 # Fallback, falls REG_WP_MODE in const.py noch nicht definiert ist
 try:
     from .const import REG_WP_MODE as _REG_WP_MODE
-except Exception:
+except Exception:  # pragma: no cover
     _REG_WP_MODE = 1090  # UCHAR RO Betriebsart Wärmepumpe
 REG_WP_MODE = _REG_WP_MODE
 
@@ -218,69 +232,464 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
     sensors = [
         # Außentemperaturen
-        IDMHeatpumpFloatSensor("idm_aussentemperatur", "aussentemperatur", REG_OUTDOOR_TEMP, UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpFloatSensor("idm_aussentemperatur_gemittelt", "aussentemperatur_gemittelt", REG_OUTDOOR_TEMP_AVG, UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
+        IDMHeatpumpFloatSensor(
+            "idm_aussentemperatur",
+            "aussentemperatur",
+            REG_OUTDOOR_TEMP,
+            UnitOfTemperature.CELSIUS,
+            client,
+            host,
+            SensorDeviceClass.TEMPERATURE,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_aussentemperatur_gemittelt",
+            "aussentemperatur_gemittelt",
+            REG_OUTDOOR_TEMP_AVG,
+            UnitOfTemperature.CELSIUS,
+            client,
+            host,
+            SensorDeviceClass.TEMPERATURE,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
 
         # Wärmepumpe direkt
-        IDMHeatpumpFloatSensor("idm_wp_vorlauf", "wp_vorlauf", REG_WP_VL_TEMP, UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpFloatSensor("idm_ruecklauf", "ruecklauf", REG_RETURN_TEMP, UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpFloatSensor("idm_ladefuehler", "ladefuehler", REG_LOAD_TEMP, UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpFloatSensor("idm_durchfluss", "durchfluss", REG_FLOW_SENSOR, "l/min", client, host, None, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpFloatSensor("idm_luftansaug", "luftansaug", REG_AIR_INLET_TEMP, UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpFloatSensor("idm_luftansaug_2", "luftansaug_2", REG_AIR_INLET_TEMP_2, UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
+        IDMHeatpumpFloatSensor(
+            "idm_wp_vorlauf",
+            "wp_vorlauf",
+            REG_WP_VL_TEMP,
+            UnitOfTemperature.CELSIUS,
+            client,
+            host,
+            SensorDeviceClass.TEMPERATURE,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_ruecklauf",
+            "ruecklauf",
+            REG_RETURN_TEMP,
+            UnitOfTemperature.CELSIUS,
+            client,
+            host,
+            SensorDeviceClass.TEMPERATURE,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_ladefuehler",
+            "ladefuehler",
+            REG_LOAD_TEMP,
+            UnitOfTemperature.CELSIUS,
+            client,
+            host,
+            SensorDeviceClass.TEMPERATURE,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
+
+        # Durchfluss B2: UCHAR mit 0,1-l/min-Skalierung
+        IDMHeatpumpFlowSensor(
+            "idm_durchfluss",
+            "durchfluss",
+            REG_FLOW_SENSOR,
+            client,
+            host,
+            interval,
+        ),
+
+        IDMHeatpumpFloatSensor(
+            "idm_luftansaug",
+            "luftansaug",
+            REG_AIR_INLET_TEMP,
+            UnitOfTemperature.CELSIUS,
+            client,
+            host,
+            SensorDeviceClass.TEMPERATURE,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_luftansaug_2",
+            "luftansaug_2",
+            REG_AIR_INLET_TEMP_2,
+            UnitOfTemperature.CELSIUS,
+            client,
+            host,
+            SensorDeviceClass.TEMPERATURE,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
 
         # Wärmespeicher / Warmwasser
-        IDMHeatpumpFloatSensor("idm_waermespeicher", "waermespeicher", REG_HEATBUFFER_TEMP, UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpFloatSensor("idm_ww_oben", "ww_oben", REG_WW_TOP_TEMP, UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpFloatSensor("idm_ww_unten", "ww_unten", REG_WW_BOTTOM_TEMP, UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpFloatSensor("idm_ww_zapftemp", "ww_zapftemp", REG_WW_TAP_TEMP, UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
+        IDMHeatpumpFloatSensor(
+            "idm_waermespeicher",
+            "waermespeicher",
+            REG_HEATBUFFER_TEMP,
+            UnitOfTemperature.CELSIUS,
+            client,
+            host,
+            SensorDeviceClass.TEMPERATURE,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_ww_oben",
+            "ww_oben",
+            REG_WW_TOP_TEMP,
+            UnitOfTemperature.CELSIUS,
+            client,
+            host,
+            SensorDeviceClass.TEMPERATURE,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_ww_unten",
+            "ww_unten",
+            REG_WW_BOTTOM_TEMP,
+            UnitOfTemperature.CELSIUS,
+            client,
+            host,
+            SensorDeviceClass.TEMPERATURE,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_ww_zapftemp",
+            "ww_zapftemp",
+            REG_WW_TAP_TEMP,
+            UnitOfTemperature.CELSIUS,
+            client,
+            host,
+            SensorDeviceClass.TEMPERATURE,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
 
         # Heizkreis A
-        IDMHeatpumpFloatSensor("idm_hka_vorlauftemperatur", "hka_vorlauf", REG_HKA_VL, UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpFloatSensor("idm_hka_soll_vorlauf", "hka_soll_vorlauf", REG_HKA_VL_SOLL, UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpActiveModeSensor("idm_hka_aktive_betriebsart", "hka_aktive_betriebsart", REG_HKA_ACTIVE_MODE, client, host, interval),
+        IDMHeatpumpFloatSensor(
+            "idm_hka_vorlauftemperatur",
+            "hka_vorlauf",
+            REG_HKA_VL,
+            UnitOfTemperature.CELSIUS,
+            client,
+            host,
+            SensorDeviceClass.TEMPERATURE,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_hka_soll_vorlauf",
+            "hka_soll_vorlauf",
+            REG_HKA_VL_SOLL,
+            UnitOfTemperature.CELSIUS,
+            client,
+            host,
+            SensorDeviceClass.TEMPERATURE,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
+        IDMHeatpumpActiveModeSensor(
+            "idm_hka_aktive_betriebsart",
+            "hka_aktive_betriebsart",
+            REG_HKA_ACTIVE_MODE,
+            client,
+            host,
+            interval,
+        ),
 
         # Heizkreis C
-        IDMHeatpumpFloatSensor("idm_hkc_vorlauftemperatur", "hkc_vorlauf", REG_HKC_VL, UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpFloatSensor("idm_hkc_soll_vorlauf", "hkc_soll_vorlauf", REG_HKC_VL_SOLL, UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpActiveModeSensor("idm_hkc_aktive_betriebsart", "hkc_aktive_betriebsart", REG_HKC_ACTIVE_MODE, client, host, interval),
+        IDMHeatpumpFloatSensor(
+            "idm_hkc_vorlauftemperatur",
+            "hkc_vorlauf",
+            REG_HKC_VL,
+            UnitOfTemperature.CELSIUS,
+            client,
+            host,
+            SensorDeviceClass.TEMPERATURE,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_hkc_soll_vorlauf",
+            "hkc_soll_vorlauf",
+            REG_HKC_VL_SOLL,
+            UnitOfTemperature.CELSIUS,
+            client,
+            host,
+            SensorDeviceClass.TEMPERATURE,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
+        IDMHeatpumpActiveModeSensor(
+            "idm_hkc_aktive_betriebsart",
+            "hkc_aktive_betriebsart",
+            REG_HKC_ACTIVE_MODE,
+            client,
+            host,
+            interval,
+        ),
 
         # PV & Batterie
-        IDMHeatpumpFloatSensor("idm_pv_ueberschuss", "pv_ueberschuss", REG_PV_SURPLUS, UnitOfPower.KILO_WATT, client, host, SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpFloatSensor("idm_e_heizstab", "e_heizstab", REG_EHEIZSTAB, UnitOfPower.KILO_WATT, client, host, SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpFloatSensor("idm_pv_produktion", "pv_produktion", REG_PV_PRODUKTION, UnitOfPower.KILO_WATT, client, host, SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpFloatSensor("idm_hausverbrauch", "hausverbrauch", REG_HAUSVERBRAUCH, UnitOfPower.KILO_WATT, client, host, SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpFloatSensor("idm_batterie_entladung", "batterie_entladung", REG_BATTERIE_ENTLADUNG, UnitOfPower.KILO_WATT, client, host, SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpWordSensor("idm_batterie_fuellstand", "batterie_fuellstand", REG_BATTERIE_FUELLSTAND, PERCENTAGE, client, host, interval, entity_category=EntityCategory.DIAGNOSTIC),
+        IDMHeatpumpFloatSensor(
+            "idm_pv_ueberschuss",
+            "pv_ueberschuss",
+            REG_PV_SURPLUS,
+            UnitOfPower.KILO_WATT,
+            client,
+            host,
+            SensorDeviceClass.POWER,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_e_heizstab",
+            "e_heizstab",
+            REG_EHEIZSTAB,
+            UnitOfPower.KILO_WATT,
+            client,
+            host,
+            SensorDeviceClass.POWER,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_pv_produktion",
+            "pv_produktion",
+            REG_PV_PRODUKTION,
+            UnitOfPower.KILO_WATT,
+            client,
+            host,
+            SensorDeviceClass.POWER,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_hausverbrauch",
+            "hausverbrauch",
+            REG_HAUSVERBRAUCH,
+            UnitOfPower.KILO_WATT,
+            client,
+            host,
+            SensorDeviceClass.POWER,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_batterie_entladung",
+            "batterie_entladung",
+            REG_BATTERIE_ENTLADUNG,
+            UnitOfPower.KILO_WATT,
+            client,
+            host,
+            SensorDeviceClass.POWER,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
+        IDMHeatpumpWordSensor(
+            "idm_batterie_fuellstand",
+            "batterie_fuellstand",
+            REG_BATTERIE_FUELLSTAND,
+            PERCENTAGE,
+            client,
+            host,
+            interval,
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
 
         # System: Interne Meldung mit Klartext + Events
-        IDMHeatpumpInternalMessageSensor("idm_interne_meldung", "interne_meldung", REG_INTERNAL_MESSAGE, client, host, interval, entity_category=EntityCategory.DIAGNOSTIC),
+        IDMHeatpumpInternalMessageSensor(
+            "idm_interne_meldung",
+            "interne_meldung",
+            REG_INTERNAL_MESSAGE,
+            client,
+            host,
+            interval,
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
 
-        # Neue Betriebsart Wärmepumpe (1090) + bisheriger Status (1091)
-        IDMHeatpumpWpModeSensor("idm_betriebsart_warmepumpe", "betriebsart_warmepumpe", REG_WP_MODE, client, host, interval),
-        IDMHeatpumpStatusSensor("idm_status_warmepumpe", "status_warmepumpe", REG_WP_STATUS, client, host, interval),
+        # Betriebsart Wärmepumpe (1090) + bisheriger Status (1091)
+        IDMHeatpumpWpModeSensor(
+            "idm_betriebsart_warmepumpe",
+            "betriebsart_warmepumpe",
+            REG_WP_MODE,
+            client,
+            host,
+            interval,
+        ),
+        IDMHeatpumpStatusSensor(
+            "idm_status_warmepumpe",
+            "status_warmepumpe",
+            REG_WP_STATUS,
+            client,
+            host,
+            interval,
+        ),
 
         # Elektrische Leistungsaufnahme WP
-        IDMHeatpumpFloatSensor("idm_wp_power", "wp_power", REG_WP_POWER, UnitOfPower.KILO_WATT, client, host, SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT, interval),
+        IDMHeatpumpFloatSensor(
+            "idm_wp_power",
+            "wp_power",
+            REG_WP_POWER,
+            UnitOfPower.KILO_WATT,
+            client,
+            host,
+            SensorDeviceClass.POWER,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
 
         # Energiemengen (kWh)
-        IDMHeatpumpFloatSensor("idm_en_heizen", "en_heizen", REG_EN_HEATING, UnitOfEnergy.KILO_WATT_HOUR, client, host, SensorDeviceClass.ENERGY, SensorStateClass.TOTAL_INCREASING, interval),
-        IDMHeatpumpFloatSensor("idm_en_gesamt", "en_gesamt", REG_EN_TOTAL, UnitOfEnergy.KILO_WATT_HOUR, client, host, SensorDeviceClass.ENERGY, SensorStateClass.TOTAL_INCREASING, interval),
-        IDMHeatpumpFloatSensor("idm_en_kuehlen", "en_kuehlen", REG_EN_COOLING, UnitOfEnergy.KILO_WATT_HOUR, client, host, SensorDeviceClass.ENERGY, SensorStateClass.TOTAL_INCREASING, interval),
-        IDMHeatpumpFloatSensor("idm_en_warmwasser", "en_warmwasser", REG_EN_DHW, UnitOfEnergy.KILO_WATT_HOUR, client, host, SensorDeviceClass.ENERGY, SensorStateClass.TOTAL_INCREASING, interval),
-        IDMHeatpumpFloatSensor("idm_en_abtauung", "en_abtauung", REG_EN_DEFROST, UnitOfEnergy.KILO_WATT_HOUR, client, host, SensorDeviceClass.ENERGY, SensorStateClass.TOTAL_INCREASING, interval),
-        IDMHeatpumpFloatSensor("idm_en_passivkuehlung", "en_passivkuehlung", REG_EN_PASSIVE_COOL, UnitOfEnergy.KILO_WATT_HOUR, client, host, SensorDeviceClass.ENERGY, SensorStateClass.TOTAL_INCREASING, interval),
-        IDMHeatpumpFloatSensor("idm_en_solar", "en_solar", REG_EN_SOLAR, UnitOfEnergy.KILO_WATT_HOUR, client, host, SensorDeviceClass.ENERGY, SensorStateClass.TOTAL_INCREASING, interval),
-        IDMHeatpumpFloatSensor("idm_en_eheizer", "en_eheizer", REG_EN_EHEATER, UnitOfEnergy.KILO_WATT_HOUR, client, host, SensorDeviceClass.ENERGY, SensorStateClass.TOTAL_INCREASING, interval),
+        IDMHeatpumpFloatSensor(
+            "idm_en_heizen",
+            "en_heizen",
+            REG_EN_HEATING,
+            UnitOfEnergy.KILO_WATT_HOUR,
+            client,
+            host,
+            SensorDeviceClass.ENERGY,
+            SensorStateClass.TOTAL_INCREASING,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_en_gesamt",
+            "en_gesamt",
+            REG_EN_TOTAL,
+            UnitOfEnergy.KILO_WATT_HOUR,
+            client,
+            host,
+            SensorDeviceClass.ENERGY,
+            SensorStateClass.TOTAL_INCREASING,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_en_kuehlen",
+            "en_kuehlen",
+            REG_EN_COOLING,
+            UnitOfEnergy.KILO_WATT_HOUR,
+            client,
+            host,
+            SensorDeviceClass.ENERGY,
+            SensorStateClass.TOTAL_INCREASING,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_en_warmwasser",
+            "en_warmwasser",
+            REG_EN_DHW,
+            UnitOfEnergy.KILO_WATT_HOUR,
+            client,
+            host,
+            SensorDeviceClass.ENERGY,
+            SensorStateClass.TOTAL_INCREASING,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_en_abtauung",
+            "en_abtauung",
+            REG_EN_DEFROST,
+            UnitOfEnergy.KILO_WATT_HOUR,
+            client,
+            host,
+            SensorDeviceClass.ENERGY,
+            SensorStateClass.TOTAL_INCREASING,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_en_passivkuehlung",
+            "en_passivkuehlung",
+            REG_EN_PASSIVE_COOL,
+            UnitOfEnergy.KILO_WATT_HOUR,
+            client,
+            host,
+            SensorDeviceClass.ENERGY,
+            SensorStateClass.TOTAL_INCREASING,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_en_solar",
+            "en_solar",
+            REG_EN_SOLAR,
+            UnitOfEnergy.KILO_WATT_HOUR,
+            client,
+            host,
+            SensorDeviceClass.ENERGY,
+            SensorStateClass.TOTAL_INCREASING,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_en_eheizer",
+            "en_eheizer",
+            REG_EN_EHEATER,
+            UnitOfEnergy.KILO_WATT_HOUR,
+            client,
+            host,
+            SensorDeviceClass.ENERGY,
+            SensorStateClass.TOTAL_INCREASING,
+            interval,
+        ),
 
         # Thermische Leistungen
-        IDMHeatpumpFloatSensor("idm_thermische_leistung", "thermische_leistung", REG_THERMAL_POWER, UnitOfPower.KILO_WATT, client, host, SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpFloatSensor("idm_solar_leistung", "solar_leistung", REG_SOLAR_POWER, UnitOfPower.KILO_WATT, client, host, SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT, interval),
+        IDMHeatpumpFloatSensor(
+            "idm_thermische_leistung",
+            "thermische_leistung",
+            REG_THERMAL_POWER,
+            UnitOfPower.KILO_WATT,
+            client,
+            host,
+            SensorDeviceClass.POWER,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_solar_leistung",
+            "solar_leistung",
+            REG_SOLAR_POWER,
+            UnitOfPower.KILO_WATT,
+            client,
+            host,
+            SensorDeviceClass.POWER,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
 
         # Solar-Temperaturen
-        IDMHeatpumpFloatSensor("idm_solar_kollektor", "solar_kollektor", REG_SOLAR_COLLECTOR_TEMP, UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpFloatSensor("idm_solar_ruecklauf", "solar_ruecklauf", REG_SOLAR_RETURN_TEMP, UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
-        IDMHeatpumpFloatSensor("idm_solar_ladetemp", "solar_ladetemp", REG_SOLAR_CHARGE_TEMP, UnitOfTemperature.CELSIUS, client, host, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, interval),
+        IDMHeatpumpFloatSensor(
+            "idm_solar_kollektor",
+            "solar_kollektor",
+            REG_SOLAR_COLLECTOR_TEMP,
+            UnitOfTemperature.CELSIUS,
+            client,
+            host,
+            SensorDeviceClass.TEMPERATURE,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_solar_ruecklauf",
+            "solar_ruecklauf",
+            REG_SOLAR_RETURN_TEMP,
+            UnitOfTemperature.CELSIUS,
+            client,
+            host,
+            SensorDeviceClass.TEMPERATURE,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
+        IDMHeatpumpFloatSensor(
+            "idm_solar_ladetemp",
+            "solar_ladetemp",
+            REG_SOLAR_CHARGE_TEMP,
+            UnitOfTemperature.CELSIUS,
+            client,
+            host,
+            SensorDeviceClass.TEMPERATURE,
+            SensorStateClass.MEASUREMENT,
+            interval,
+        ),
     ]
 
     async_add_entities(sensors)
@@ -308,7 +717,19 @@ class IDMBaseEntity:
 # Float-Sensor
 # -------------------------------------------------------------------
 class IDMHeatpumpFloatSensor(IDMBaseEntity, SensorEntity):
-    def __init__(self, unique_id, translation_key, register, unit, client, host, device_class=None, state_class=SensorStateClass.MEASUREMENT, interval=30, entity_category=None):
+    def __init__(
+        self,
+        unique_id,
+        translation_key,
+        register,
+        unit,
+        client,
+        host,
+        device_class=None,
+        state_class=SensorStateClass.MEASUREMENT,
+        interval=30,
+        entity_category=None,
+    ):
         super().__init__(host)
         self._attr_unique_id = unique_id
         self._attr_translation_key = translation_key
@@ -324,15 +745,73 @@ class IDMHeatpumpFloatSensor(IDMBaseEntity, SensorEntity):
 
     async def async_update(self):
         value = await self._client.read_float(self._register)
-        if value is not None:
-            self._attr_native_value = value
+        if value is None:
+            return
+
+        # Für TOTAL_INCREASING sind negative Werte ungültig (z. B. -1.0 = "keine Daten").
+        # In diesem Fall den letzten gültigen Wert beibehalten und nichts aktualisieren.
+        if (
+            self._attr_state_class == SensorStateClass.TOTAL_INCREASING
+            and value < 0
+        ):
+            return
+
+        self._attr_native_value = value
+
+
+# -------------------------------------------------------------------
+# Durchflusssensor (B2 / REG_FLOW_SENSOR) – UCHAR mit 0,1-l/min-Skalierung
+# -------------------------------------------------------------------
+class IDMHeatpumpFlowSensor(IDMBaseEntity, SensorEntity):
+    def __init__(
+        self,
+        unique_id,
+        translation_key,
+        register,
+        client,
+        host,
+        interval=30,
+        entity_category=None,
+    ):
+        super().__init__(host)
+        self._attr_unique_id = unique_id
+        self._attr_translation_key = translation_key
+        self._attr_has_entity_name = True
+        self._register = register
+        self._client = client
+        self._attr_native_unit_of_measurement = "l/min"
+        self._attr_native_value = None
+        self._attr_device_class = None
+        self._attr_state_class = SensorStateClass.MEASUREMENT
+        self._attr_scan_interval = timedelta(seconds=interval)
+        self._attr_entity_category = entity_category
+
+    async def async_update(self):
+        raw = await self._client.read_uchar(self._register)
+        if raw is None:
+            return
+
+        # 0,1-l/min-Skalierung: 172 -> 17,2 l/min; 255 als Fehlerwert behandeln
+        if raw == 255:
+            self._attr_native_value = None
+        else:
+            self._attr_native_value = round(raw / 10.0, 1)
 
 
 # -------------------------------------------------------------------
 # Interne Meldung (UCHAR) mit Klartext + Event/Notification
 # -------------------------------------------------------------------
 class IDMHeatpumpInternalMessageSensor(IDMBaseEntity, SensorEntity):
-    def __init__(self, unique_id, translation_key, register, client, host, interval=30, entity_category=None):
+    def __init__(
+        self,
+        unique_id,
+        translation_key,
+        register,
+        client,
+        host,
+        interval=30,
+        entity_category=None,
+    ):
         super().__init__(host)
         self._attr_unique_id = unique_id
         self._attr_translation_key = translation_key
@@ -360,8 +839,15 @@ class IDMHeatpumpInternalMessageSensor(IDMBaseEntity, SensorEntity):
 
         if code != self._last_code:
             text = code_to_text(code)
-            self.hass.bus.async_fire("idm_internal_message_changed", {"code": code, "text": text})
-            pn_create(self.hass, f"Code {code:03d} – {text}", title="iDM interne Meldung")
+            self.hass.bus.async_fire(
+                "idm_internal_message_changed",
+                {"code": code, "text": text},
+            )
+            pn_create(
+                self.hass,
+                f"Code {code:03d} – {text}",
+                title="iDM interne Meldung",
+            )
             self._last_code = code
 
     @property
@@ -379,7 +865,17 @@ class IDMHeatpumpInternalMessageSensor(IDMBaseEntity, SensorEntity):
 # Word-Sensor
 # -------------------------------------------------------------------
 class IDMHeatpumpWordSensor(IDMBaseEntity, SensorEntity):
-    def __init__(self, unique_id, translation_key, register, unit, client, host, interval=30, entity_category=None):
+    def __init__(
+        self,
+        unique_id,
+        translation_key,
+        register,
+        unit,
+        client,
+        host,
+        interval=30,
+        entity_category=None,
+    ):
         super().__init__(host)
         self._attr_unique_id = unique_id
         self._attr_translation_key = translation_key
@@ -403,7 +899,15 @@ class IDMHeatpumpWordSensor(IDMBaseEntity, SensorEntity):
 # Status-Sensor Wärmepumpe (1091)
 # -------------------------------------------------------------------
 class IDMHeatpumpStatusSensor(IDMBaseEntity, SensorEntity):
-    def __init__(self, unique_id, translation_key, register, client, host, interval=30):
+    def __init__(
+        self,
+        unique_id,
+        translation_key,
+        register,
+        client,
+        host,
+        interval=30,
+    ):
         super().__init__(host)
         self._attr_unique_id = unique_id
         self._attr_translation_key = translation_key
@@ -435,7 +939,15 @@ class IDMHeatpumpStatusSensor(IDMBaseEntity, SensorEntity):
 # Aktive Betriebsart Heizkreis A/C
 # -------------------------------------------------------------------
 class IDMHeatpumpActiveModeSensor(IDMBaseEntity, SensorEntity):
-    def __init__(self, unique_id, translation_key, register, client, host, interval=30):
+    def __init__(
+        self,
+        unique_id,
+        translation_key,
+        register,
+        client,
+        host,
+        interval=30,
+    ):
         super().__init__(host)
         self._attr_unique_id = unique_id
         self._attr_translation_key = translation_key
@@ -471,7 +983,15 @@ class IDMHeatpumpActiveModeSensor(IDMBaseEntity, SensorEntity):
 # Betriebsart Wärmepumpe (1090)
 # -------------------------------------------------------------------
 class IDMHeatpumpWpModeSensor(IDMBaseEntity, SensorEntity):
-    def __init__(self, unique_id, translation_key, register, client, host, interval=30):
+    def __init__(
+        self,
+        unique_id,
+        translation_key,
+        register,
+        client,
+        host,
+        interval=30,
+    ):
         super().__init__(host)
         self._attr_unique_id = unique_id
         self._attr_translation_key = translation_key
