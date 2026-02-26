@@ -13,6 +13,7 @@ import logging
 from datetime import timedelta
 
 from homeassistant.const import Platform
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
@@ -37,6 +38,138 @@ PLATFORMS: list[Platform] = [
     Platform.SWITCH,
     Platform.NUMBER,
 ]
+
+
+def build_expected_unique_ids(
+    heating_circuits: list[str],
+    sensor_groups: list[str],
+) -> set[str]:
+    """Erzeugt die Menge aller unique_ids, die bei der aktuellen Konfiguration
+    existieren sollen. Wird zum Aufräumen verwaister Entitäten verwendet."""
+
+    ids: set[str] = set()
+
+    # --- Basis-Sensoren (immer) ---
+    ids.update([
+        "idm_aussentemperatur", "idm_aussentemperatur_gemittelt",
+        "idm_wp_vorlauf", "idm_ruecklauf", "idm_ladefuehler",
+        "idm_durchfluss", "idm_luftansaug", "idm_luftansaug_2",
+        "idm_waermespeicher", "idm_ww_oben", "idm_ww_unten",
+        "idm_ww_zapftemp", "idm_interne_meldung",
+        "idm_betriebsart_warmepumpe", "idm_status_warmepumpe",
+        "idm_wp_power", "idm_thermische_leistung",
+        "idm_en_heizen", "idm_en_gesamt", "idm_en_kuehlen",
+        "idm_en_warmwasser", "idm_en_abtauung", "idm_en_passivkuehlung",
+        "idm_en_solar", "idm_en_eheizer",
+    ])
+
+    # --- Basis-Numbers (immer) ---
+    ids.update(["idm_ww_target", "idm_ww_start", "idm_ww_stop"])
+
+    # --- Basis-Selects (immer) ---
+    ids.add("idm_betriebsart")
+
+    # --- Basis-Switches (immer) ---
+    ids.update(["idm_heat_request", "idm_ww_request", "idm_ww_onetime"])
+
+    # --- Pro Heizkreis (immer) ---
+    for hc in heating_circuits:
+        key = hc.lower()
+        # Sensoren
+        ids.update([
+            f"idm_hk{key}_vorlauftemperatur",
+            f"idm_hk{key}_soll_vorlauf",
+            f"idm_hk{key}_aktive_betriebsart",
+        ])
+        # Numbers
+        ids.update([
+            f"idm_hk{key}_temp_normal",
+            f"idm_hk{key}_temp_eco",
+            f"idm_hk{key}_curve",
+            f"idm_hk{key}_parallel",
+            f"idm_hk{key}_heat_limit",
+        ])
+        # Selects
+        ids.add(f"idm_hk{key}_betriebsart")
+
+    # --- Solar-Gruppe ---
+    if "solar" in sensor_groups:
+        ids.update([
+            "idm_solar_kollektor", "idm_solar_ruecklauf",
+            "idm_solar_ladetemp", "idm_solar_leistung",
+            "idm_solar_betriebsart",
+        ])
+
+    # --- PV/Batterie-Gruppe ---
+    if "pv_battery" in sensor_groups:
+        ids.update([
+            "idm_pv_ueberschuss", "idm_e_heizstab",
+            "idm_pv_produktion", "idm_hausverbrauch",
+            "idm_batterie_entladung", "idm_batterie_fuellstand",
+            "idm_smartgrid_status", "idm_strompreis",
+            "idm_pv_zielwert",
+        ])
+
+    # --- Kühlungs-Gruppe ---
+    if "cooling" in sensor_groups:
+        ids.update([
+            "idm_kuehlanforderung_wp", "idm_ww_anforderung_wp",
+            "idm_cool_request",
+        ])
+        for hc in heating_circuits:
+            key = hc.lower()
+            ids.update([
+                f"idm_hk{key}_cool_normal",
+                f"idm_hk{key}_cool_eco",
+                f"idm_hk{key}_cool_limit",
+                f"idm_hk{key}_cool_vl",
+            ])
+
+    # --- Diagnose-Gruppe ---
+    if "diagnostic" in sensor_groups:
+        ids.update([
+            "idm_summenstoerung", "idm_evu_sperre",
+            "idm_verdichter_1", "idm_ladepumpe",
+            "idm_variabler_eingang", "idm_umschaltventil",
+            "idm_zirkulationspumpe", "idm_leistungsbegrenzung",
+        ])
+
+    # --- Einzelraumregelung-Gruppe ---
+    if "room_control" in sensor_groups:
+        ids.add("idm_feuchtesensor")
+        for hc in heating_circuits:
+            key = hc.lower()
+            ids.add(f"idm_hk{key}_raumtemperatur")
+
+    # --- Erweiterte Temperaturen-Gruppe ---
+    if "extended_temps" in sensor_groups:
+        ids.update([
+            "idm_luftwaermetauscher", "idm_waermesenke_ruecklauf",
+            "idm_waermesenke_vorlauf", "idm_kaeltespeicher",
+        ])
+
+    return ids
+
+
+async def _async_cleanup_entities(hass, entry, heating_circuits, sensor_groups):
+    """Entfernt verwaiste Entitäten, die nicht mehr zur Konfiguration gehören."""
+    registry = er.async_get(hass)
+    expected = build_expected_unique_ids(heating_circuits, sensor_groups)
+
+    entries = er.async_entries_for_config_entry(registry, entry.entry_id)
+    removed = 0
+    for entity_entry in entries:
+        if entity_entry.unique_id not in expected:
+            _LOGGER.info(
+                "Entferne verwaiste Entität: %s (unique_id: %s)",
+                entity_entry.entity_id,
+                entity_entry.unique_id,
+            )
+            registry.async_remove(entity_entry.entity_id)
+            removed += 1
+
+    if removed:
+        _LOGGER.info("iDM Cleanup: %d verwaiste Entität(en) entfernt", removed)
 
 
 async def async_setup_entry(hass, entry):
@@ -106,6 +239,10 @@ async def async_setup_entry(hass, entry):
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    # Verwaiste Entitäten aufräumen (z.B. nach Deaktivierung von HK/Gruppen)
+    await _async_cleanup_entities(hass, entry, heating_circuits, sensor_groups)
+
     return True
 
 
