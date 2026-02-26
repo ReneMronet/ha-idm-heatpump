@@ -1,7 +1,12 @@
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v0.6.0
+Version: v0.7.0
 Stand: 2026-02-26
+
+Änderungen v0.7.0:
+- Temperatur-Offset pro HK (Number-Entity, ±5°C)
+- Schreib-Intervall: "Deaktiviert" als Standard
+- Migration v4→v5
 
 Änderungen v0.6.0:
 - Raumtemperatur-Übernahme (externe Sensoren → WP via Modbus)
@@ -50,7 +55,7 @@ CONF_ROOM_TEMP_SEASON_END_MONTH = "room_temp_season_end_month"
 CONF_ROOM_TEMP_SEASON_END_DAY = "room_temp_season_end_day"
 
 DEFAULT_ROOM_TEMP_ENTITIES = {}
-DEFAULT_ROOM_TEMP_INTERVAL = "on_change"
+DEFAULT_ROOM_TEMP_INTERVAL = "disabled"
 DEFAULT_ROOM_TEMP_SEASON_ENABLED = False
 DEFAULT_ROOM_TEMP_SEASON_START_MONTH = 10
 DEFAULT_ROOM_TEMP_SEASON_START_DAY = 1
@@ -64,6 +69,7 @@ ROOM_TEMP_WRITE_TOLERANCE = 0.1  # EEPROM-Schutz: nur bei >0.1°C Differenz
 ROOM_TEMP_NO_SENSOR = -1.0       # Wert für "kein Fühler vorhanden"
 
 ROOM_TEMP_INTERVAL_OPTIONS = {
+    "disabled": "Deaktiviert",
     "on_change": "Bei Änderung",
     "300": "5 Minuten",
     "600": "10 Minuten",
@@ -71,6 +77,14 @@ ROOM_TEMP_INTERVAL_OPTIONS = {
     "1800": "30 Minuten",
     "3600": "60 Minuten",
 }
+
+# Temperatur-Offset pro HK (v0.7.0)
+CONF_ROOM_TEMP_OFFSETS = "room_temp_offsets"
+DEFAULT_ROOM_TEMP_OFFSETS = {}
+ROOM_TEMP_OFFSET_MIN = -5.0
+ROOM_TEMP_OFFSET_MAX = 5.0
+ROOM_TEMP_OFFSET_STEP = 0.5
+ROOM_TEMP_OFFSET_DEFAULT = 0.0
 
 
 def hc_room_temp_write_reg(circuit: str) -> int:

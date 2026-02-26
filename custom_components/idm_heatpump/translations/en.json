@@ -37,6 +37,16 @@
           "room_temp_season_end_month": "Season End Month",
           "room_temp_season_end_day": "Season End Day"
         }
+      },
+      "room_temp_season": {
+        "title": "Season Period",
+        "description": "Define the period during which room temperature forwarding is automatically active.",
+        "data": {
+          "room_temp_season_start_month": "Season Start Month",
+          "room_temp_season_start_day": "Season Start Day",
+          "room_temp_season_end_month": "Season End Month",
+          "room_temp_season_end_day": "Season End Day"
+        }
       }
     },
     "error": {
@@ -75,6 +85,16 @@
           "room_temp_g": "🌡️ HC G Room Sensor",
           "room_temp_interval": "Write Interval",
           "room_temp_season_enabled": "Seasonal Automation",
+          "room_temp_season_start_month": "Season Start Month",
+          "room_temp_season_start_day": "Season Start Day",
+          "room_temp_season_end_month": "Season End Month",
+          "room_temp_season_end_day": "Season End Day"
+        }
+      },
+      "room_temp_season": {
+        "title": "Season Period",
+        "description": "Define the period during which room temperature forwarding is automatically active.",
+        "data": {
           "room_temp_season_start_month": "Season Start Month",
           "room_temp_season_start_day": "Season Start Day",
           "room_temp_season_end_month": "Season End Month",
@@ -544,6 +564,27 @@
       },
       "pv_zielwert": {
         "name": "PV Target Value (Reg. 88)"
+      },
+      "hka_room_temp_offset": {
+        "name": "HC A Room Temp Offset"
+      },
+      "hkb_room_temp_offset": {
+        "name": "HC B Room Temp Offset"
+      },
+      "hkc_room_temp_offset": {
+        "name": "HC C Room Temp Offset"
+      },
+      "hkd_room_temp_offset": {
+        "name": "HC D Room Temp Offset"
+      },
+      "hke_room_temp_offset": {
+        "name": "HC E Room Temp Offset"
+      },
+      "hkf_room_temp_offset": {
+        "name": "HC F Room Temp Offset"
+      },
+      "hkg_room_temp_offset": {
+        "name": "HC G Room Temp Offset"
       }
     },
     "select": {

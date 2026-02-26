@@ -1,7 +1,11 @@
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v5.0
+Version: v0.7.0
 Stand: 2026-02-26
+
+Änderungen v0.7.0:
+- Temperatur-Offset Number-Entity pro HK (±5°C, Step 0.5)
+- Persistiert via RestoreEntity, wirkt direkt auf RoomTempForwarder
 
 Änderungen v5.0 (Schritt 2):
 - Kühl-Numbers pro HK: cool_normal, cool_eco, cool_limit, cool_vl
@@ -14,12 +18,18 @@ import logging
 from homeassistant.components.number import NumberEntity
 from homeassistant.const import UnitOfTemperature, UnitOfPower
 from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     DOMAIN,
     DEFAULT_HEATING_CIRCUITS,
     DEFAULT_SENSOR_GROUPS,
+    DEFAULT_ROOM_TEMP_ENTITIES,
+    ROOM_TEMP_OFFSET_MIN,
+    ROOM_TEMP_OFFSET_MAX,
+    ROOM_TEMP_OFFSET_STEP,
+    ROOM_TEMP_OFFSET_DEFAULT,
     REG_WW_TARGET,
     REG_WW_START,
     REG_WW_STOP,
@@ -39,6 +49,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
     host = entry_data["host"]
     heating_circuits = entry_data.get("heating_circuits", DEFAULT_HEATING_CIRCUITS)
     sensor_groups = entry_data.get("sensor_groups", DEFAULT_SENSOR_GROUPS)
+    room_temp_entities = entry_data.get("room_temp_entities", DEFAULT_ROOM_TEMP_ENTITIES)
+    forwarder = entry_data.get("room_temp_forwarder")
 
     entities = []
 
@@ -149,6 +161,20 @@ async def async_setup_entry(hass, entry, async_add_entities):
             ),
         )
 
+    # ===================================================================
+    # RAUMTEMPERATUR-OFFSET pro HK (v0.7.0)
+    # ===================================================================
+    if room_temp_entities and forwarder:
+        for hc in room_temp_entities:
+            key = hc.lower()
+            entities.append(
+                IDMRoomTempOffset(
+                    coordinator, host, forwarder, hc,
+                    unique_id=f"idm_hk{key}_room_temp_offset",
+                    translation_key=f"hk{key}_room_temp_offset",
+                ),
+            )
+
     async_add_entities(entities)
 
 
@@ -239,3 +265,72 @@ class IDMUcharNumber(CoordinatorEntity, NumberEntity):
     @property
     def extra_state_attributes(self):
         return {"default_value": self._default}
+
+
+# -------------------------------------------------------------------
+# Room Temperature Offset (v0.7.0)
+# -------------------------------------------------------------------
+class IDMRoomTempOffset(CoordinatorEntity, RestoreEntity, NumberEntity):
+    """Temperatur-Offset pro Heizkreis.
+
+    Positiver Offset → WP denkt es ist wärmer → heizt weniger
+    Negativer Offset → WP denkt es ist kälter → heizt mehr
+
+    Der Wert wird vor dem Schreiben in Register 1650+i*2 addiert.
+    Persistiert via RestoreEntity über HA-Neustarts hinweg.
+    """
+
+    _attr_has_entity_name = True
+    _attr_native_min_value = ROOM_TEMP_OFFSET_MIN
+    _attr_native_max_value = ROOM_TEMP_OFFSET_MAX
+    _attr_native_step = ROOM_TEMP_OFFSET_STEP
+    _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
+    _attr_device_class = "temperature"
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_icon = "mdi:thermometer-plus"
+
+    def __init__(self, coordinator, host, forwarder, hc,
+                 unique_id, translation_key):
+        super().__init__(coordinator)
+        self._host = host
+        self._forwarder = forwarder
+        self._hc = hc
+        self._attr_unique_id = unique_id
+        self._attr_translation_key = translation_key
+        self._value = ROOM_TEMP_OFFSET_DEFAULT
+
+    @property
+    def device_info(self):
+        return get_device_info(self._host)
+
+    @property
+    def native_value(self):
+        return self._value
+
+    async def async_set_native_value(self, value: float):
+        self._value = round(float(value), 1)
+        self._forwarder.set_offset(self._hc, self._value)
+        self.async_write_ha_state()
+
+    async def async_added_to_hass(self):
+        """Restore previous value on startup."""
+        await super().async_added_to_hass()
+        last_state = await self.async_get_last_state()
+        if last_state and last_state.state not in (None, "unknown", "unavailable"):
+            try:
+                self._value = round(float(last_state.state), 1)
+            except (ValueError, TypeError):
+                self._value = ROOM_TEMP_OFFSET_DEFAULT
+        # Offset im Forwarder setzen
+        self._forwarder.set_offset(self._hc, self._value)
+        _LOGGER.debug(
+            "Raumtemperatur-Offset HK %s restored: %.1f°C",
+            self._hc, self._value,
+        )
+
+    @property
+    def extra_state_attributes(self):
+        return {
+            "heizkreis": self._hc,
+            "default_value": ROOM_TEMP_OFFSET_DEFAULT,
+        }

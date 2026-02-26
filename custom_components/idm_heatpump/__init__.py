@@ -1,7 +1,12 @@
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v0.6.0
+Version: v0.7.0
 Stand: 2026-02-26
+
+Änderungen v0.7.0:
+- Temperatur-Offset pro HK (Number-Entity, ±5°C)
+- Schreib-Intervall: "Deaktiviert" als Standard + Handling
+- Migration v4→v5
 
 Änderungen v0.6.0:
 - RoomTempForwarder: Externe Raumtemperaturen → WP (Register 1650+)
@@ -51,6 +56,9 @@ from .const import (
     DEFAULT_ROOM_TEMP_SEASON_START_DAY,
     DEFAULT_ROOM_TEMP_SEASON_END_MONTH,
     DEFAULT_ROOM_TEMP_SEASON_END_DAY,
+    CONF_ROOM_TEMP_OFFSETS,
+    DEFAULT_ROOM_TEMP_OFFSETS,
+    ROOM_TEMP_OFFSET_DEFAULT,
     ROOM_TEMP_WRITE_TOLERANCE,
     ROOM_TEMP_NO_SENSOR,
     hc_room_temp_write_reg,
@@ -76,7 +84,8 @@ class RoomTempForwarder:
     """Leitet Raumtemperaturen von HA-Sensoren an die Wärmepumpe weiter.
 
     Features:
-    - Schreib-Intervall: bei State-Änderung oder Timer (5–60 Min.)
+    - Schreib-Intervall: bei State-Änderung, Timer (5–60 Min.) oder Deaktiviert
+    - Temperatur-Offset pro HK: Wert wird vor dem Schreiben addiert (v0.7.0)
     - EEPROM-Schutz: nur bei Differenz > 0.1°C schreiben
     - Offline-Erkennung: -1.0 schreiben wenn Sensor unavailable
     - Saisonale Automatik: aktiv nur innerhalb Saison-Zeitraum
@@ -105,6 +114,28 @@ class RoomTempForwarder:
         self._unsub_listeners: list = []
         self._master_switch_on = True
         self._manual_override = False  # True wenn manuell ausgeschaltet
+        self._offsets: dict[str, float] = {}  # {"A": -2.0, "C": 1.5}
+
+    def get_offset(self, hc: str) -> float:
+        """Liefert den aktuellen Offset für einen Heizkreis."""
+        return self._offsets.get(hc, ROOM_TEMP_OFFSET_DEFAULT)
+
+    def set_offset(self, hc: str, value: float):
+        """Setzt den Offset für einen Heizkreis und triggert Neuschreibung."""
+        old = self._offsets.get(hc, ROOM_TEMP_OFFSET_DEFAULT)
+        self._offsets[hc] = value
+        _LOGGER.info(
+            "Raumtemperatur-Offset HK %s: %.1f → %.1f°C",
+            hc, old, value,
+        )
+        # Wert mit neuem Offset sofort neu schreiben
+        if self.is_active and hc in self._entity_map:
+            self._last_written.pop(hc, None)  # Cache invalidieren
+            state = self._hass.states.get(self._entity_map[hc])
+            state_value = state.state if state else STATE_UNAVAILABLE
+            self._hass.async_create_task(
+                self._write_single(hc, state_value)
+            )
 
     @property
     def is_active(self) -> bool:
@@ -144,6 +175,12 @@ class RoomTempForwarder:
         """Startet die Listener/Timer."""
         if not self._entity_map:
             _LOGGER.debug("Raumtemperatur-Übernahme: Keine Sensoren konfiguriert")
+            return
+
+        if self._interval == "disabled":
+            _LOGGER.info(
+                "Raumtemperatur-Übernahme: Deaktiviert (Sensoren konfiguriert, aber Intervall=Deaktiviert)"
+            )
             return
 
         # Tägliche Saison-Prüfung um Mitternacht
@@ -247,7 +284,7 @@ class RoomTempForwarder:
             )
 
     async def _write_single(self, hc: str, state_value: str):
-        """Schreibt einen einzelnen Temperaturwert mit EEPROM-Schutz."""
+        """Schreibt einen einzelnen Temperaturwert mit EEPROM-Schutz und Offset."""
         register = hc_room_temp_write_reg(hc)
 
         if state_value in (STATE_UNAVAILABLE, STATE_UNKNOWN, None, ""):
@@ -263,7 +300,17 @@ class RoomTempForwarder:
             )
             return
 
-        await self._write_if_changed(hc, register, temp)
+        # Offset anwenden (v0.7.0)
+        offset = self.get_offset(hc)
+        adjusted_temp = round(temp + offset, 1)
+
+        if offset != 0.0:
+            _LOGGER.debug(
+                "Raumtemperatur HK %s: %.1f°C + Offset %.1f°C = %.1f°C",
+                hc, temp, offset, adjusted_temp,
+            )
+
+        await self._write_if_changed(hc, register, adjusted_temp)
 
     async def _write_if_changed(self, hc: str, register: int, value: float):
         """Schreibt nur wenn Differenz > Toleranz (EEPROM-Schutz)."""
@@ -341,6 +388,10 @@ def build_expected_unique_ids(
     # --- Raumtemperatur-Master-Switch (wenn Entities konfiguriert) ---
     if room_temp_entities:
         ids.add("idm_room_temp_master")
+        # Offset Number-Entities pro konfiguriertem HK (v0.7.0)
+        for hc in room_temp_entities:
+            key = hc.lower()
+            ids.add(f"idm_hk{key}_room_temp_offset")
 
     # --- Pro Heizkreis (immer) ---
     for hc in heating_circuits:
@@ -467,6 +518,7 @@ async def async_setup_entry(hass, entry):
     # Raumtemperatur-Übernahme Konfiguration
     room_temp_entities = _get_config(entry, CONF_ROOM_TEMP_ENTITIES, DEFAULT_ROOM_TEMP_ENTITIES)
     room_temp_interval = _get_config(entry, CONF_ROOM_TEMP_INTERVAL, DEFAULT_ROOM_TEMP_INTERVAL)
+    room_temp_offsets = _get_config(entry, CONF_ROOM_TEMP_OFFSETS, DEFAULT_ROOM_TEMP_OFFSETS)
     season_enabled = _get_config(entry, CONF_ROOM_TEMP_SEASON_ENABLED, DEFAULT_ROOM_TEMP_SEASON_ENABLED)
     season_start = (
         _get_config(entry, CONF_ROOM_TEMP_SEASON_START_MONTH, DEFAULT_ROOM_TEMP_SEASON_START_MONTH),
@@ -531,6 +583,7 @@ async def async_setup_entry(hass, entry):
         "update_interval": update_interval,
         "room_temp_entities": room_temp_entities,
         "room_temp_forwarder": forwarder,
+        "room_temp_offsets": room_temp_offsets,
     }
 
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
@@ -604,6 +657,15 @@ async def async_migrate_entry(hass, config_entry):
         new_data.setdefault(CONF_ROOM_TEMP_SEASON_END_DAY, DEFAULT_ROOM_TEMP_SEASON_END_DAY)
         hass.config_entries.async_update_entry(
             config_entry, data=new_data, version=4
+        )
+
+    if config_entry.version == 4:
+        _LOGGER.info("Migriere iDM Config von Version 4 → 5")
+        new_data = {**config_entry.data}
+        new_data.setdefault(CONF_ROOM_TEMP_OFFSETS, DEFAULT_ROOM_TEMP_OFFSETS)
+        # Bestehende Installationen mit on_change behalten ihre Einstellung
+        hass.config_entries.async_update_entry(
+            config_entry, data=new_data, version=5
         )
 
     return True

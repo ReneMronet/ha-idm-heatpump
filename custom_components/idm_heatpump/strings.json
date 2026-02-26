@@ -556,6 +556,27 @@
       },
       "pv_zielwert": {
         "name": "PV Target Value (Reg. 88)"
+      },
+      "hka_room_temp_offset": {
+        "name": "HC A Room Temp Offset"
+      },
+      "hkb_room_temp_offset": {
+        "name": "HC B Room Temp Offset"
+      },
+      "hkc_room_temp_offset": {
+        "name": "HC C Room Temp Offset"
+      },
+      "hkd_room_temp_offset": {
+        "name": "HC D Room Temp Offset"
+      },
+      "hke_room_temp_offset": {
+        "name": "HC E Room Temp Offset"
+      },
+      "hkf_room_temp_offset": {
+        "name": "HC F Room Temp Offset"
+      },
+      "hkg_room_temp_offset": {
+        "name": "HC G Room Temp Offset"
       }
     },
     "select": {

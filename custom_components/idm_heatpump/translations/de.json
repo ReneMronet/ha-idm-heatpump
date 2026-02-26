@@ -37,6 +37,16 @@
           "room_temp_season_end_month": "Saison-Ende Monat",
           "room_temp_season_end_day": "Saison-Ende Tag"
         }
+      },
+      "room_temp_season": {
+        "title": "Saison-Zeitraum",
+        "description": "Definiere den Zeitraum, in dem die Raumtemperatur-Übernahme automatisch aktiv ist.",
+        "data": {
+          "room_temp_season_start_month": "Saison-Start Monat",
+          "room_temp_season_start_day": "Saison-Start Tag",
+          "room_temp_season_end_month": "Saison-Ende Monat",
+          "room_temp_season_end_day": "Saison-Ende Tag"
+        }
       }
     },
     "error": {
@@ -75,6 +85,16 @@
           "room_temp_g": "🌡️ HK G Raumsensor",
           "room_temp_interval": "Schreib-Intervall",
           "room_temp_season_enabled": "Saisonale Automatik",
+          "room_temp_season_start_month": "Saison-Start Monat",
+          "room_temp_season_start_day": "Saison-Start Tag",
+          "room_temp_season_end_month": "Saison-Ende Monat",
+          "room_temp_season_end_day": "Saison-Ende Tag"
+        }
+      },
+      "room_temp_season": {
+        "title": "Saison-Zeitraum",
+        "description": "Definiere den Zeitraum, in dem die Raumtemperatur-Übernahme automatisch aktiv ist.",
+        "data": {
           "room_temp_season_start_month": "Saison-Start Monat",
           "room_temp_season_start_day": "Saison-Start Tag",
           "room_temp_season_end_month": "Saison-Ende Monat",
@@ -544,6 +564,27 @@
       },
       "pv_zielwert": {
         "name": "PV-Zielwert (Reg. 88)"
+      },
+      "hka_room_temp_offset": {
+        "name": "HK A Raumtemp. Offset"
+      },
+      "hkb_room_temp_offset": {
+        "name": "HK B Raumtemp. Offset"
+      },
+      "hkc_room_temp_offset": {
+        "name": "HK C Raumtemp. Offset"
+      },
+      "hkd_room_temp_offset": {
+        "name": "HK D Raumtemp. Offset"
+      },
+      "hke_room_temp_offset": {
+        "name": "HK E Raumtemp. Offset"
+      },
+      "hkf_room_temp_offset": {
+        "name": "HK F Raumtemp. Offset"
+      },
+      "hkg_room_temp_offset": {
+        "name": "HK G Raumtemp. Offset"
       }
     },
     "select": {

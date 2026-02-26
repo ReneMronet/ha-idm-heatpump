@@ -1,7 +1,11 @@
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v0.6.0
+Version: v0.7.0
 Stand: 2026-02-26
+
+Änderungen v0.7.0:
+- Schreib-Intervall: "Deaktiviert" als Standard
+- Config-Version 5
 
 Änderungen v0.6.0:
 - Schritt 3a: Raumtemperatur-Übernahme (Entity-Picker, Intervall, Saison-Toggle)
@@ -237,7 +241,7 @@ def _store_season_defaults(target: dict):
 # ===================================================================
 
 class IDMHeatpumpConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 4
+    VERSION = 5
 
     def __init__(self):
         super().__init__()
