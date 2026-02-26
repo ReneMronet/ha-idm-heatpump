@@ -10,6 +10,13 @@
           "unit_id": "Unit ID",
           "update_interval": "Update Interval (seconds)"
         }
+      },
+      "circuits": {
+        "title": "Select Heating Circuits",
+        "description": "Select the heating circuits available on your system.",
+        "data": {
+          "heating_circuits": "Active Heating Circuits"
+        }
       }
     },
     "error": {
@@ -25,12 +32,13 @@
     "step": {
       "init": {
         "title": "Options for iDM Heat Pump",
-        "description": "Adjust the IP address, TCP port, unit ID and update interval.",
+        "description": "Adjust connection settings and active heating circuits.",
         "data": {
           "host": "IP Address",
           "port": "TCP Port",
           "unit_id": "Unit ID",
-          "update_interval": "Update Interval (seconds)"
+          "update_interval": "Update Interval (seconds)",
+          "heating_circuits": "Active Heating Circuits"
         }
       }
     }
@@ -49,10 +57,27 @@
       "ruecklauf": { "name": "Return Temperature (B34)" },
       "ladefuehler": { "name": "Loading Sensor (B45)" },
       "durchfluss": { "name": "Heating Flow Rate (B2)" },
-      "hka_vorlauf": { "name": "Heating Circuit A Flow Temperature (B49)" },
-      "hka_soll_vorlauf": { "name": "Heating Circuit A Target Flow Temperature (B49s)" },
-      "hkc_vorlauf": { "name": "Heating Circuit C Flow Temperature (B59)" },
-      "hkc_soll_vorlauf": { "name": "Heating Circuit C Target Flow Temperature (B59s)" },
+      "hka_vorlauf": { "name": "Heating Circuit A Flow Temperature" },
+      "hka_soll_vorlauf": { "name": "Heating Circuit A Target Flow Temperature" },
+      "hka_aktive_betriebsart": { "name": "Active Mode Heating Circuit A" },
+      "hkb_vorlauf": { "name": "Heating Circuit B Flow Temperature" },
+      "hkb_soll_vorlauf": { "name": "Heating Circuit B Target Flow Temperature" },
+      "hkb_aktive_betriebsart": { "name": "Active Mode Heating Circuit B" },
+      "hkc_vorlauf": { "name": "Heating Circuit C Flow Temperature" },
+      "hkc_soll_vorlauf": { "name": "Heating Circuit C Target Flow Temperature" },
+      "hkc_aktive_betriebsart": { "name": "Active Mode Heating Circuit C" },
+      "hkd_vorlauf": { "name": "Heating Circuit D Flow Temperature" },
+      "hkd_soll_vorlauf": { "name": "Heating Circuit D Target Flow Temperature" },
+      "hkd_aktive_betriebsart": { "name": "Active Mode Heating Circuit D" },
+      "hke_vorlauf": { "name": "Heating Circuit E Flow Temperature" },
+      "hke_soll_vorlauf": { "name": "Heating Circuit E Target Flow Temperature" },
+      "hke_aktive_betriebsart": { "name": "Active Mode Heating Circuit E" },
+      "hkf_vorlauf": { "name": "Heating Circuit F Flow Temperature" },
+      "hkf_soll_vorlauf": { "name": "Heating Circuit F Target Flow Temperature" },
+      "hkf_aktive_betriebsart": { "name": "Active Mode Heating Circuit F" },
+      "hkg_vorlauf": { "name": "Heating Circuit G Flow Temperature" },
+      "hkg_soll_vorlauf": { "name": "Heating Circuit G Target Flow Temperature" },
+      "hkg_aktive_betriebsart": { "name": "Active Mode Heating Circuit G" },
       "pv_ueberschuss": { "name": "PV Surplus (PV74)" },
       "e_heizstab": { "name": "Electric Heater Power (PV76)" },
       "pv_produktion": { "name": "PV Production (PV78)" },
@@ -60,8 +85,6 @@
       "batterie_entladung": { "name": "Battery Discharge (PV84)" },
       "batterie_fuellstand": { "name": "Battery State of Charge (PV86)" },
       "status_warmepumpe": { "name": "Heat Pump Status (B19)" },
-      "hka_aktive_betriebsart": { "name": "Active Mode Heating Circuit A (B55)" },
-      "hkc_aktive_betriebsart": { "name": "Active Mode Heating Circuit C (B65)" },
       "wp_power": { "name": "Electrical Total Power Heat Pump (Reg. 4122)" },
       "en_heizen": { "name": "Energy Heating (Reg. 1748)" },
       "en_gesamt": { "name": "Energy Total (Reg. 1750)" },
@@ -76,7 +99,8 @@
       "solar_kollektor": { "name": "Solar Collector Temperature (B73)" },
       "solar_ruecklauf": { "name": "Solar Collector Return Temperature (B75)" },
       "solar_ladetemp": { "name": "Solar Charge Temperature (B74)" },
-	  "betriebsart_warmepumpe": { "name": "Heat Pump Mode (1090)" }
+      "betriebsart_warmepumpe": { "name": "Heat Pump Mode (1090)" },
+      "interne_meldung": { "name": "Internal Message" }
     },
     "switch": {
       "heat_request": { "name": "Heating Request" },
@@ -85,15 +109,40 @@
     },
     "number": {
       "hka_temp_normal": { "name": "HC A Setpoint Normal" },
+      "hkb_temp_normal": { "name": "HC B Setpoint Normal" },
       "hkc_temp_normal": { "name": "HC C Setpoint Normal" },
+      "hkd_temp_normal": { "name": "HC D Setpoint Normal" },
+      "hke_temp_normal": { "name": "HC E Setpoint Normal" },
+      "hkf_temp_normal": { "name": "HC F Setpoint Normal" },
+      "hkg_temp_normal": { "name": "HC G Setpoint Normal" },
       "hka_temp_eco": { "name": "HC A Setpoint Eco" },
+      "hkb_temp_eco": { "name": "HC B Setpoint Eco" },
       "hkc_temp_eco": { "name": "HC C Setpoint Eco" },
-      "hka_curve": { "name": "HC A Heating Curve (HKA10)" },
-      "hkc_curve": { "name": "HC C Heating Curve (HKC10)" },
-      "hka_parallel": { "name": "HC A Parallel Shift (HKA03)" },
-      "hkc_parallel": { "name": "HC C Parallel Shift (HKC03)" },
-      "hka_heat_limit": { "name": "HC A Heating Limit (HKA08)" },
-      "hkc_heat_limit": { "name": "HC C Heating Limit (HKC08)" },
+      "hkd_temp_eco": { "name": "HC D Setpoint Eco" },
+      "hke_temp_eco": { "name": "HC E Setpoint Eco" },
+      "hkf_temp_eco": { "name": "HC F Setpoint Eco" },
+      "hkg_temp_eco": { "name": "HC G Setpoint Eco" },
+      "hka_curve": { "name": "HC A Heating Curve" },
+      "hkb_curve": { "name": "HC B Heating Curve" },
+      "hkc_curve": { "name": "HC C Heating Curve" },
+      "hkd_curve": { "name": "HC D Heating Curve" },
+      "hke_curve": { "name": "HC E Heating Curve" },
+      "hkf_curve": { "name": "HC F Heating Curve" },
+      "hkg_curve": { "name": "HC G Heating Curve" },
+      "hka_parallel": { "name": "HC A Parallel Shift" },
+      "hkb_parallel": { "name": "HC B Parallel Shift" },
+      "hkc_parallel": { "name": "HC C Parallel Shift" },
+      "hkd_parallel": { "name": "HC D Parallel Shift" },
+      "hke_parallel": { "name": "HC E Parallel Shift" },
+      "hkf_parallel": { "name": "HC F Parallel Shift" },
+      "hkg_parallel": { "name": "HC G Parallel Shift" },
+      "hka_heat_limit": { "name": "HC A Heating Limit" },
+      "hkb_heat_limit": { "name": "HC B Heating Limit" },
+      "hkc_heat_limit": { "name": "HC C Heating Limit" },
+      "hkd_heat_limit": { "name": "HC D Heating Limit" },
+      "hke_heat_limit": { "name": "HC E Heating Limit" },
+      "hkf_heat_limit": { "name": "HC F Heating Limit" },
+      "hkg_heat_limit": { "name": "HC G Heating Limit" },
       "ww_target": { "name": "DHW Target Temperature" },
       "ww_start": { "name": "DHW Start Temperature" },
       "ww_stop": { "name": "DHW Stop Temperature" }
@@ -101,7 +150,12 @@
     "select": {
       "betriebsart": { "name": "System Operating Mode" },
       "hka_betriebsart": { "name": "Heating Circuit A Mode" },
+      "hkb_betriebsart": { "name": "Heating Circuit B Mode" },
       "hkc_betriebsart": { "name": "Heating Circuit C Mode" },
+      "hkd_betriebsart": { "name": "Heating Circuit D Mode" },
+      "hke_betriebsart": { "name": "Heating Circuit E Mode" },
+      "hkf_betriebsart": { "name": "Heating Circuit F Mode" },
+      "hkg_betriebsart": { "name": "Heating Circuit G Mode" },
       "solar_betriebsart": { "name": "Solar Operating Mode" }
     }
   }

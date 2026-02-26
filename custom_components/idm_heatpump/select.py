@@ -1,12 +1,11 @@
 # Datei: select.py
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v1.6
-Stand: 2025-11-03
+Version: v2.0
+Stand: 2026-02-26
 
-Änderungen v1.6:
-- Dynamisches Icon je nach Betriebsart für Reg. 1005.
-- Hinweis-Attribut unverändert.
+Änderungen v2.0:
+- Heizkreise A–G dynamisch über hc_reg() und Konfiguration
 """
 
 import logging
@@ -16,11 +15,12 @@ from homeassistant.helpers.entity import EntityCategory
 from .const import (
     DOMAIN,
     REG_SYSTEM_MODE,
-    REG_HKA_MODE,
-    REG_HKC_MODE,
     REG_SOLAR_MODE,
     CONF_UNIT_ID,
     DEFAULT_UNIT_ID,
+    CONF_HEATING_CIRCUITS,
+    DEFAULT_HEATING_CIRCUITS,
+    hc_reg,
 )
 from .modbus_handler import IDMModbusHandler
 
@@ -35,7 +35,6 @@ SYSTEM_OPTIONS = {
     "Nur Heizen/Kühlen": 5,
 }
 
-# Hinweis-Texte für die Systembetriebsart
 SYSTEM_INFO = {
     "Standby": "Gerät auf Standby. Frostschutz ist aktiv.",
     "Automatik": "Bei Einstellung „Automatik“ läuft das System nach den eingestellten Heiz-, Kühl- und Warmwasserladezeiten.",
@@ -45,14 +44,13 @@ SYSTEM_INFO = {
     "Nur Heizen/Kühlen": "Bei der Einstellung „Nur Heizen/Kühlen“ arbeitet die Anlage nur für Raumheizen bzw. aktives Kühlen. Keine Warmwasserladung.",
 }
 
-# Icons pro Systemmodus
 SYSTEM_ICONS = {
     "Standby": "mdi:power-standby",
     "Automatik": "mdi:home-account",
     "Abwesend": "mdi:home-thermometer-outline",
     "Urlaub": "mdi:bag-suitcase-outline",
     "Nur Warmwasser": "mdi:water-thermometer",
-    "Nur Heizen/Kühlen": "mdi:heat-wave",  # alternativ: mdi:radiator / mdi:snowflake
+    "Nur Heizen/Kühlen": "mdi:heat-wave",
 }
 
 HK_OPTIONS = {
@@ -78,58 +76,61 @@ async def async_setup_entry(hass, entry, async_add_entities):
     port = entry.data.get("port")
     unit_id = entry.data.get(CONF_UNIT_ID, DEFAULT_UNIT_ID)
     interval = hass.data[DOMAIN][entry.entry_id]["update_interval"]
+    heating_circuits = hass.data[DOMAIN][entry.entry_id].get(
+        "heating_circuits", DEFAULT_HEATING_CIRCUITS
+    )
 
     client = IDMModbusHandler(host, port, unit_id)
     await client.connect()
 
-    async_add_entities(
-        [
+    entities = [
+        # System-Betriebsart (immer)
+        _ModeSelect(
+            unique_id="idm_betriebsart",
+            translation_key="betriebsart",
+            client=client,
+            host=host,
+            register=REG_SYSTEM_MODE,
+            options_map=SYSTEM_OPTIONS,
+            info_map=SYSTEM_INFO,
+            icon_map=SYSTEM_ICONS,
+            interval=interval,
+        ),
+    ]
+
+    # Dynamische Heizkreis-Selects
+    for hc in heating_circuits:
+        key = hc.lower()
+        entities.append(
             _ModeSelect(
-                unique_id="idm_betriebsart",
-                translation_key="betriebsart",
+                unique_id=f"idm_hk{key}_betriebsart",
+                translation_key=f"hk{key}_betriebsart",
                 client=client,
                 host=host,
-                register=REG_SYSTEM_MODE,
-                options_map=SYSTEM_OPTIONS,
-                info_map=SYSTEM_INFO,
-                icon_map=SYSTEM_ICONS,      # dynamisches Icon nur für Systemmodus
-                interval=interval,
-            ),
-            _ModeSelect(
-                unique_id="idm_hka_betriebsart",
-                translation_key="hka_betriebsart",
-                client=client,
-                host=host,
-                register=REG_HKA_MODE,
+                register=hc_reg(hc, "mode"),
                 options_map=HK_OPTIONS,
                 info_map=None,
                 icon_map=None,
                 interval=interval,
-            ),
-            _ModeSelect(
-                unique_id="idm_hkc_betriebsart",
-                translation_key="hkc_betriebsart",
-                client=client,
-                host=host,
-                register=REG_HKC_MODE,
-                options_map=HK_OPTIONS,
-                info_map=None,
-                icon_map=None,
-                interval=interval,
-            ),
-            _ModeSelect(
-                unique_id="idm_solar_betriebsart",
-                translation_key="solar_betriebsart",
-                client=client,
-                host=host,
-                register=REG_SOLAR_MODE,
-                options_map=SOLAR_OPTIONS,
-                info_map=None,
-                icon_map=None,
-                interval=interval,
-            ),
-        ]
+            )
+        )
+
+    # Solar-Betriebsart (immer)
+    entities.append(
+        _ModeSelect(
+            unique_id="idm_solar_betriebsart",
+            translation_key="solar_betriebsart",
+            client=client,
+            host=host,
+            register=REG_SOLAR_MODE,
+            options_map=SOLAR_OPTIONS,
+            info_map=None,
+            icon_map=None,
+            interval=interval,
+        )
     )
+
+    async_add_entities(entities)
 
 
 class _ModeSelect(SelectEntity):
@@ -180,7 +181,6 @@ class _ModeSelect(SelectEntity):
 
     @property
     def icon(self):
-        # dynamisches Icon je nach aktuellem Modus
         if self._current_value in self._icon_map:
             return self._icon_map[self._current_value]
         return "mdi:tune"

@@ -1,11 +1,11 @@
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v1.9
-Stand: 2025-11-09
+Version: v2.0
+Stand: 2026-02-26
 
-Änderungen v1.9:
-- Neue Number-Entities (FLOAT): Heizkurve HK A (1429) und HK C (1433), 0.0..3.5, Schritt 0.1, Default 0.6
-- Bestand: Heizgrenze HK A/C (1442/1444) und Parallelverschiebung HK A/C (1505/1507)
+Änderungen v2.0:
+- Heizkreise A–G dynamisch über hc_reg() und Konfiguration
+- Alle HC-Number-Entities (Normal, Eco, Curve, Parallel, Heizgrenze) per Schleife
 """
 
 import logging
@@ -17,25 +17,16 @@ from .const import (
     DOMAIN,
     CONF_UNIT_ID,
     DEFAULT_UNIT_ID,
+    CONF_HEATING_CIRCUITS,
+    DEFAULT_HEATING_CIRCUITS,
     REG_WW_TARGET,
     REG_WW_START,
     REG_WW_STOP,
-    REG_HKA_PARALLEL,
-    REG_HKC_PARALLEL,
-    REG_HKA_HEATLIMIT,
-    REG_HKC_HEATLIMIT,
-    REG_HKA_CURVE,
-    REG_HKC_CURVE,
+    hc_reg,
 )
 from .modbus_handler import IDMModbusHandler
 
 _LOGGER = logging.getLogger(__name__)
-
-# Register-Adressen Heizkreise (Vorlauf-Solltemperaturen, FLOAT)
-REG_HKA_NORMAL = 1401
-REG_HKC_NORMAL = 1405
-REG_HKA_ECO    = 1415
-REG_HKC_ECO    = 1419
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
@@ -43,53 +34,68 @@ async def async_setup_entry(hass, entry, async_add_entities):
     port = entry.data.get("port")
     unit_id = entry.data.get(CONF_UNIT_ID, DEFAULT_UNIT_ID)
     interval = hass.data[DOMAIN][entry.entry_id]["update_interval"]
+    heating_circuits = hass.data[DOMAIN][entry.entry_id].get(
+        "heating_circuits", DEFAULT_HEATING_CIRCUITS
+    )
 
     client = IDMModbusHandler(host, port, unit_id)
     await client.connect()
 
-    entities = [
-        # Heizkreise (FLOAT)
-        IDMSollTempFloatNumber("idm_hka_temp_normal", "hka_temp_normal", REG_HKA_NORMAL,
-                               15, 30, 0.5, 22, client, host, interval),
-        IDMSollTempFloatNumber("idm_hkc_temp_normal", "hkc_temp_normal", REG_HKC_NORMAL,
-                               15, 30, 0.5, 22, client, host, interval),
-        IDMSollTempFloatNumber("idm_hka_temp_eco", "hka_temp_eco", REG_HKA_ECO,
-                               10, 25, 0.5, 18, client, host, interval),
-        IDMSollTempFloatNumber("idm_hkc_temp_eco", "hkc_temp_eco", REG_HKC_ECO,
-                               10, 25, 0.5, 18, client, host, interval),
+    entities = []
 
-        # Heizkurve Heizkreise (FLOAT 0.0..3.5)
-        IDMSollTempFloatNumber("idm_hka_curve", "hka_curve", REG_HKA_CURVE,
-                               0.0, 3.5, 0.1, 0.6, client, host, interval),
-        IDMSollTempFloatNumber("idm_hkc_curve", "hkc_curve", REG_HKC_CURVE,
-                               0.0, 3.5, 0.1, 0.6, client, host, interval),
+    # ----------------------------------------------------------
+    # Dynamische Heizkreis-Numbers (A–G, je nach Konfiguration)
+    # ----------------------------------------------------------
+    for hc in heating_circuits:
+        key = hc.lower()
+        entities.extend([
+            # Solltemperatur Normal (FLOAT, 15–30 °C)
+            IDMSollTempFloatNumber(
+                f"idm_hk{key}_temp_normal", f"hk{key}_temp_normal",
+                hc_reg(hc, "temp_normal"),
+                15, 30, 0.5, 22, client, host, interval,
+            ),
+            # Solltemperatur Eco (FLOAT, 10–25 °C)
+            IDMSollTempFloatNumber(
+                f"idm_hk{key}_temp_eco", f"hk{key}_temp_eco",
+                hc_reg(hc, "temp_eco"),
+                10, 25, 0.5, 18, client, host, interval,
+            ),
+            # Heizkurve (FLOAT, 0.0–3.5)
+            IDMSollTempFloatNumber(
+                f"idm_hk{key}_curve", f"hk{key}_curve",
+                hc_reg(hc, "curve"),
+                0.0, 3.5, 0.1, 0.6, client, host, interval,
+            ),
+            # Parallelverschiebung (UCHAR, 0–30 °C)
+            IDMSollTempUcharNumber(
+                f"idm_hk{key}_parallel", f"hk{key}_parallel",
+                hc_reg(hc, "parallel"),
+                0, 30, 1, 0, client, host, interval,
+            ),
+            # Heizgrenze (UCHAR, 0–50 °C)
+            IDMSollTempUcharNumber(
+                f"idm_hk{key}_heat_limit", f"hk{key}_heat_limit",
+                hc_reg(hc, "heat_limit"),
+                0, 50, 1, 15, client, host, interval,
+            ),
+        ])
 
-        # Parallelverschiebung Heizkreise (UCHAR 0..30 °C)
-        IDMSollTempUcharNumber("idm_hka_parallel", "hka_parallel", REG_HKA_PARALLEL,
-                               0, 30, 1, 0, client, host, interval),
-        IDMSollTempUcharNumber("idm_hkc_parallel", "hkc_parallel", REG_HKC_PARALLEL,
-                               0, 30, 1, 0, client, host, interval),
-
-        # Heizgrenzen Heizkreise (UCHAR 0..50 °C)
-        IDMSollTempUcharNumber("idm_hka_heat_limit", "hka_heat_limit", REG_HKA_HEATLIMIT,
-                               0, 50, 1, 15, client, host, interval),
-        IDMSollTempUcharNumber("idm_hkc_heat_limit", "hkc_heat_limit", REG_HKC_HEATLIMIT,
-                               0, 50, 1, 15, client, host, interval),
-
-        # Warmwasser (UCHAR)
+    # Warmwasser (unabhängig von Heizkreisen)
+    entities.extend([
         IDMSollTempUcharNumber("idm_ww_target", "ww_target", REG_WW_TARGET,
                                30, 60, 1, 46, client, host, interval),
         IDMSollTempUcharNumber("idm_ww_start", "ww_start", REG_WW_START,
                                30, 50, 1, 46, client, host, interval),
         IDMSollTempUcharNumber("idm_ww_stop", "ww_stop", REG_WW_STOP,
                                46, 67, 1, 50, client, host, interval),
-    ]
+    ])
 
     async_add_entities(entities)
 
 
 # -------------------------------------------------------------------
-# FLOAT-Nummern (HK A/C Solltemperaturen, Heizkurve)
+# FLOAT-Nummern (HK Solltemperaturen, Heizkurve)
 # -------------------------------------------------------------------
 class IDMSollTempFloatNumber(NumberEntity):
     _attr_has_entity_name = True
@@ -113,7 +119,6 @@ class IDMSollTempFloatNumber(NumberEntity):
     async def async_update(self):
         value = await self._client.read_float(self._register)
         if value is not None:
-            # 1 Nachkommastelle reicht für Heizkurve
             self._attr_native_value = round(float(value), 1)
 
     async def async_set_native_value(self, value: float):

@@ -9,7 +9,14 @@
           "port": "TCP-Port",
           "unit_id": "Unit-ID",
           "update_interval": "Update-Intervall (Sekunden)"
-          }
+        }
+      },
+      "circuits": {
+        "title": "Heizkreise auswählen",
+        "description": "Wähle die an deiner Anlage vorhandenen Heizkreise aus.",
+        "data": {
+          "heating_circuits": "Aktive Heizkreise"
+        }
       }
     },
     "error": {
@@ -25,12 +32,13 @@
     "step": {
       "init": {
         "title": "Optionen für iDM Wärmepumpe",
-        "description": "Passe die IP-Adresse, den TCP-Port, die Unit-ID und das Update-Intervall an.",
+        "description": "Passe die Verbindungsdaten und aktive Heizkreise an.",
         "data": {
           "host": "IP-Adresse",
           "port": "TCP-Port",
           "unit_id": "Unit-ID",
-          "update_interval": "Update-Intervall (Sekunden)"
+          "update_interval": "Update-Intervall (Sekunden)",
+          "heating_circuits": "Aktive Heizkreise"
         }
       }
     }
@@ -49,10 +57,27 @@
       "ruecklauf": { "name": "Rücklauftemperatur (B34)" },
       "ladefuehler": { "name": "Ladefühler (B45)" },
       "durchfluss": { "name": "Durchfluss Heizung (B2)" },
-      "hka_vorlauf": { "name": "Heizkreis A Vorlauftemperatur (B49)" },
-      "hka_soll_vorlauf": { "name": "Heizkreis A Soll-Vorlauftemperatur (B49s)" },
-      "hkc_vorlauf": { "name": "Heizkreis C Vorlauftemperatur (B59)" },
-      "hkc_soll_vorlauf": { "name": "Heizkreis C Soll-Vorlauftemperatur (B59s)" },
+      "hka_vorlauf": { "name": "Heizkreis A Vorlauftemperatur" },
+      "hka_soll_vorlauf": { "name": "Heizkreis A Soll-Vorlauftemperatur" },
+      "hka_aktive_betriebsart": { "name": "Aktive Betriebsart Heizkreis A" },
+      "hkb_vorlauf": { "name": "Heizkreis B Vorlauftemperatur" },
+      "hkb_soll_vorlauf": { "name": "Heizkreis B Soll-Vorlauftemperatur" },
+      "hkb_aktive_betriebsart": { "name": "Aktive Betriebsart Heizkreis B" },
+      "hkc_vorlauf": { "name": "Heizkreis C Vorlauftemperatur" },
+      "hkc_soll_vorlauf": { "name": "Heizkreis C Soll-Vorlauftemperatur" },
+      "hkc_aktive_betriebsart": { "name": "Aktive Betriebsart Heizkreis C" },
+      "hkd_vorlauf": { "name": "Heizkreis D Vorlauftemperatur" },
+      "hkd_soll_vorlauf": { "name": "Heizkreis D Soll-Vorlauftemperatur" },
+      "hkd_aktive_betriebsart": { "name": "Aktive Betriebsart Heizkreis D" },
+      "hke_vorlauf": { "name": "Heizkreis E Vorlauftemperatur" },
+      "hke_soll_vorlauf": { "name": "Heizkreis E Soll-Vorlauftemperatur" },
+      "hke_aktive_betriebsart": { "name": "Aktive Betriebsart Heizkreis E" },
+      "hkf_vorlauf": { "name": "Heizkreis F Vorlauftemperatur" },
+      "hkf_soll_vorlauf": { "name": "Heizkreis F Soll-Vorlauftemperatur" },
+      "hkf_aktive_betriebsart": { "name": "Aktive Betriebsart Heizkreis F" },
+      "hkg_vorlauf": { "name": "Heizkreis G Vorlauftemperatur" },
+      "hkg_soll_vorlauf": { "name": "Heizkreis G Soll-Vorlauftemperatur" },
+      "hkg_aktive_betriebsart": { "name": "Aktive Betriebsart Heizkreis G" },
       "pv_ueberschuss": { "name": "PV-Überschuss (PV74)" },
       "e_heizstab": { "name": "Leistung E-Heizstab (PV76)" },
       "pv_produktion": { "name": "PV-Produktion (PV78)" },
@@ -60,8 +85,6 @@
       "batterie_entladung": { "name": "Batterieentladung (PV84)" },
       "batterie_fuellstand": { "name": "Batteriefüllstand (PV86)" },
       "status_warmepumpe": { "name": "Status Wärmepumpe (B19)" },
-      "hka_aktive_betriebsart": { "name": "Aktive Betriebsart Heizkreis A (B55)" },
-      "hkc_aktive_betriebsart": { "name": "Aktive Betriebsart Heizkreis C (B65)" },
       "wp_power": { "name": "Elektrische Gesamtleistung Wärmepumpe (Reg. 4122)" },
       "en_heizen": { "name": "Wärmemenge Heizen (Reg. 1748)" },
       "en_gesamt": { "name": "Wärmemenge Gesamt (Reg. 1750)" },
@@ -76,7 +99,8 @@
       "solar_kollektor": { "name": "Solarkollektortemperatur (B73)" },
       "solar_ruecklauf": { "name": "Solarkollektorrücklauftemperatur (B75)" },
       "solar_ladetemp": { "name": "Solar-Ladetemperatur (B74)" },
-	  "betriebsart_warmepumpe": { "name": "Betriebsart Wärmepumpe (1090)" }
+      "betriebsart_warmepumpe": { "name": "Betriebsart Wärmepumpe (1090)" },
+      "interne_meldung": { "name": "Interne Meldung" }
     },
     "switch": {
       "heat_request": { "name": "Heizungsanforderung" },
@@ -85,15 +109,40 @@
     },
     "number": {
       "hka_temp_normal": { "name": "HK A Solltemperatur Normal" },
+      "hkb_temp_normal": { "name": "HK B Solltemperatur Normal" },
       "hkc_temp_normal": { "name": "HK C Solltemperatur Normal" },
+      "hkd_temp_normal": { "name": "HK D Solltemperatur Normal" },
+      "hke_temp_normal": { "name": "HK E Solltemperatur Normal" },
+      "hkf_temp_normal": { "name": "HK F Solltemperatur Normal" },
+      "hkg_temp_normal": { "name": "HK G Solltemperatur Normal" },
       "hka_temp_eco": { "name": "HK A Solltemperatur Eco" },
+      "hkb_temp_eco": { "name": "HK B Solltemperatur Eco" },
       "hkc_temp_eco": { "name": "HK C Solltemperatur Eco" },
-      "hka_curve": { "name": "Heizkurve HK A (HKA10)" },
-      "hkc_curve": { "name": "Heizkurve HK C (HKC10)" },
-      "hka_parallel": { "name": "Parallelverschiebung HK A (HKA03)" },
-      "hkc_parallel": { "name": "Parallelverschiebung HK C (HKC03)" },
-      "hka_heat_limit": { "name": "Heizgrenze HK A (HKA08)" },
-      "hkc_heat_limit": { "name": "Heizgrenze HK C (HKC08)" },
+      "hkd_temp_eco": { "name": "HK D Solltemperatur Eco" },
+      "hke_temp_eco": { "name": "HK E Solltemperatur Eco" },
+      "hkf_temp_eco": { "name": "HK F Solltemperatur Eco" },
+      "hkg_temp_eco": { "name": "HK G Solltemperatur Eco" },
+      "hka_curve": { "name": "Heizkurve HK A" },
+      "hkb_curve": { "name": "Heizkurve HK B" },
+      "hkc_curve": { "name": "Heizkurve HK C" },
+      "hkd_curve": { "name": "Heizkurve HK D" },
+      "hke_curve": { "name": "Heizkurve HK E" },
+      "hkf_curve": { "name": "Heizkurve HK F" },
+      "hkg_curve": { "name": "Heizkurve HK G" },
+      "hka_parallel": { "name": "Parallelverschiebung HK A" },
+      "hkb_parallel": { "name": "Parallelverschiebung HK B" },
+      "hkc_parallel": { "name": "Parallelverschiebung HK C" },
+      "hkd_parallel": { "name": "Parallelverschiebung HK D" },
+      "hke_parallel": { "name": "Parallelverschiebung HK E" },
+      "hkf_parallel": { "name": "Parallelverschiebung HK F" },
+      "hkg_parallel": { "name": "Parallelverschiebung HK G" },
+      "hka_heat_limit": { "name": "Heizgrenze HK A" },
+      "hkb_heat_limit": { "name": "Heizgrenze HK B" },
+      "hkc_heat_limit": { "name": "Heizgrenze HK C" },
+      "hkd_heat_limit": { "name": "Heizgrenze HK D" },
+      "hke_heat_limit": { "name": "Heizgrenze HK E" },
+      "hkf_heat_limit": { "name": "Heizgrenze HK F" },
+      "hkg_heat_limit": { "name": "Heizgrenze HK G" },
       "ww_target": { "name": "WW-Solltemperatur" },
       "ww_start": { "name": "WW-Ladung Starttemperatur" },
       "ww_stop": { "name": "WW-Ladung Stopp-Temperatur" }
@@ -101,7 +150,12 @@
     "select": {
       "betriebsart": { "name": "Betriebsart System" },
       "hka_betriebsart": { "name": "Betriebsart Heizkreis A" },
+      "hkb_betriebsart": { "name": "Betriebsart Heizkreis B" },
       "hkc_betriebsart": { "name": "Betriebsart Heizkreis C" },
+      "hkd_betriebsart": { "name": "Betriebsart Heizkreis D" },
+      "hke_betriebsart": { "name": "Betriebsart Heizkreis E" },
+      "hkf_betriebsart": { "name": "Betriebsart Heizkreis F" },
+      "hkg_betriebsart": { "name": "Betriebsart Heizkreis G" },
       "solar_betriebsart": { "name": "Betriebsart Solar" }
     }
   }

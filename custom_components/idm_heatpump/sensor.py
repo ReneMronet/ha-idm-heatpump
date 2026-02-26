@@ -64,13 +64,10 @@ from .const import (
     REG_WW_BOTTOM_TEMP,
     REG_WW_TAP_TEMP,
     REG_WW_TOP_TEMP,
-    # Heizkreise
-    REG_HKA_ACTIVE_MODE,
-    REG_HKA_VL,
-    REG_HKA_VL_SOLL,
-    REG_HKC_ACTIVE_MODE,
-    REG_HKC_VL,
-    REG_HKC_VL_SOLL,
+    # Heizkreise (dynamisch)
+    hc_reg,
+    CONF_HEATING_CIRCUITS,
+    DEFAULT_HEATING_CIRCUITS,
     # PV/Batterie
     REG_BATTERIE_ENTLADUNG,
     REG_BATTERIE_FUELLSTAND,
@@ -226,6 +223,9 @@ async def async_setup_entry(hass, entry, async_add_entities):
     port = entry.data.get("port")
     unit_id = entry.data.get(CONF_UNIT_ID, DEFAULT_UNIT_ID)
     interval = hass.data[DOMAIN][entry.entry_id]["update_interval"]
+    heating_circuits = hass.data[DOMAIN][entry.entry_id].get(
+        "heating_circuits", DEFAULT_HEATING_CIRCUITS
+    )
 
     client = IDMModbusHandler(host, port, unit_id)
     await client.connect()
@@ -369,69 +369,47 @@ async def async_setup_entry(hass, entry, async_add_entities):
             interval,
         ),
 
-        # Heizkreis A
-        IDMHeatpumpFloatSensor(
-            "idm_hka_vorlauftemperatur",
-            "hka_vorlauf",
-            REG_HKA_VL,
-            UnitOfTemperature.CELSIUS,
-            client,
-            host,
-            SensorDeviceClass.TEMPERATURE,
-            SensorStateClass.MEASUREMENT,
-            interval,
-        ),
-        IDMHeatpumpFloatSensor(
-            "idm_hka_soll_vorlauf",
-            "hka_soll_vorlauf",
-            REG_HKA_VL_SOLL,
-            UnitOfTemperature.CELSIUS,
-            client,
-            host,
-            SensorDeviceClass.TEMPERATURE,
-            SensorStateClass.MEASUREMENT,
-            interval,
-        ),
-        IDMHeatpumpActiveModeSensor(
-            "idm_hka_aktive_betriebsart",
-            "hka_aktive_betriebsart",
-            REG_HKA_ACTIVE_MODE,
-            client,
-            host,
-            interval,
-        ),
+        # ----------------------------------------------------------
+        # Dynamische Heizkreis-Sensoren (A–G, je nach Konfiguration)
+        # ----------------------------------------------------------
+    ]
 
-        # Heizkreis C
-        IDMHeatpumpFloatSensor(
-            "idm_hkc_vorlauftemperatur",
-            "hkc_vorlauf",
-            REG_HKC_VL,
-            UnitOfTemperature.CELSIUS,
-            client,
-            host,
-            SensorDeviceClass.TEMPERATURE,
-            SensorStateClass.MEASUREMENT,
-            interval,
-        ),
-        IDMHeatpumpFloatSensor(
-            "idm_hkc_soll_vorlauf",
-            "hkc_soll_vorlauf",
-            REG_HKC_VL_SOLL,
-            UnitOfTemperature.CELSIUS,
-            client,
-            host,
-            SensorDeviceClass.TEMPERATURE,
-            SensorStateClass.MEASUREMENT,
-            interval,
-        ),
-        IDMHeatpumpActiveModeSensor(
-            "idm_hkc_aktive_betriebsart",
-            "hkc_aktive_betriebsart",
-            REG_HKC_ACTIVE_MODE,
-            client,
-            host,
-            interval,
-        ),
+    for hc in heating_circuits:
+        key = hc.lower()  # "a", "b", ...
+        sensors.extend([
+            IDMHeatpumpFloatSensor(
+                f"idm_hk{key}_vorlauftemperatur",
+                f"hk{key}_vorlauf",
+                hc_reg(hc, "vl"),
+                UnitOfTemperature.CELSIUS,
+                client,
+                host,
+                SensorDeviceClass.TEMPERATURE,
+                SensorStateClass.MEASUREMENT,
+                interval,
+            ),
+            IDMHeatpumpFloatSensor(
+                f"idm_hk{key}_soll_vorlauf",
+                f"hk{key}_soll_vorlauf",
+                hc_reg(hc, "vl_soll"),
+                UnitOfTemperature.CELSIUS,
+                client,
+                host,
+                SensorDeviceClass.TEMPERATURE,
+                SensorStateClass.MEASUREMENT,
+                interval,
+            ),
+            IDMHeatpumpActiveModeSensor(
+                f"idm_hk{key}_aktive_betriebsart",
+                f"hk{key}_aktive_betriebsart",
+                hc_reg(hc, "active_mode"),
+                client,
+                host,
+                interval,
+            ),
+        ])
+
+    sensors.extend([
 
         # PV & Batterie
         IDMHeatpumpFloatSensor(
@@ -690,7 +668,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
             SensorStateClass.MEASUREMENT,
             interval,
         ),
-    ]
+    ])
 
     async_add_entities(sensors)
 
