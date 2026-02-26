@@ -12,10 +12,11 @@
         }
       },
       "circuits": {
-        "title": "Heizkreise auswählen",
-        "description": "Wähle die an deiner Anlage vorhandenen Heizkreise aus.",
+        "title": "Heizkreise & Sensorgruppen",
+        "description": "Wähle die vorhandenen Heizkreise und gewünschten Sensorgruppen aus.",
         "data": {
-          "heating_circuits": "Aktive Heizkreise"
+          "heating_circuits": "Aktive Heizkreise",
+          "sensor_groups": "Sensorgruppen"
         }
       }
     },
@@ -32,13 +33,14 @@
     "step": {
       "init": {
         "title": "Optionen für iDM Wärmepumpe",
-        "description": "Passe die Verbindungsdaten und aktive Heizkreise an.",
+        "description": "Passe die Verbindungsdaten, aktive Heizkreise und Sensorgruppen an.",
         "data": {
           "host": "IP-Adresse",
           "port": "TCP-Port",
           "unit_id": "Unit-ID",
           "update_interval": "Update-Intervall (Sekunden)",
-          "heating_circuits": "Aktive Heizkreise"
+          "heating_circuits": "Aktive Heizkreise",
+          "sensor_groups": "Sensorgruppen"
         }
       }
     }
@@ -100,12 +102,36 @@
       "solar_ruecklauf": { "name": "Solarkollektorrücklauftemperatur (B75)" },
       "solar_ladetemp": { "name": "Solar-Ladetemperatur (B74)" },
       "betriebsart_warmepumpe": { "name": "Betriebsart Wärmepumpe (1090)" },
-      "interne_meldung": { "name": "Interne Meldung" }
+      "interne_meldung": { "name": "Interne Meldung" },
+      "smartgrid_status": { "name": "SmartGrid Status (Reg. 90)" },
+      "strompreis": { "name": "Aktueller Strompreis (Reg. 1048)" },
+      "kuehlanforderung_wp": { "name": "Kühlanforderung Wärmepumpe (Reg. 1092)" },
+      "ww_anforderung_wp": { "name": "Warmwasseranforderung Wärmepumpe (Reg. 1093)" },
+      "summenstoerung": { "name": "Summenstörung (Reg. 1099)" },
+      "evu_sperre": { "name": "EVU-Sperrkontakt (Reg. 1098)" },
+      "verdichter_1": { "name": "Verdichter 1 (Reg. 1100)" },
+      "ladepumpe": { "name": "Ladepumpe (Reg. 1104)" },
+      "variabler_eingang": { "name": "Variabler Eingang (Reg. 1006)" },
+      "umschaltventil": { "name": "Umschaltventil Heizen/Kühlen (Reg. 1110)" },
+      "zirkulationspumpe": { "name": "Zirkulationspumpe (Reg. 1118)" },
+      "hka_raumtemperatur": { "name": "Raumtemperatur HK A (Reg. 1364)" },
+      "hkb_raumtemperatur": { "name": "Raumtemperatur HK B (Reg. 1366)" },
+      "hkc_raumtemperatur": { "name": "Raumtemperatur HK C (Reg. 1368)" },
+      "hkd_raumtemperatur": { "name": "Raumtemperatur HK D (Reg. 1370)" },
+      "hke_raumtemperatur": { "name": "Raumtemperatur HK E (Reg. 1372)" },
+      "hkf_raumtemperatur": { "name": "Raumtemperatur HK F (Reg. 1374)" },
+      "hkg_raumtemperatur": { "name": "Raumtemperatur HK G (Reg. 1376)" },
+      "feuchtesensor": { "name": "Feuchtesensor (B31, Reg. 1392)" },
+      "luftwaermetauscher": { "name": "Luftwärmetauschertemperatur (B72, Reg. 1062)" },
+      "waermesenke_ruecklauf": { "name": "Rücklauf Wärmesenke (B124, Reg. 1068)" },
+      "waermesenke_vorlauf": { "name": "Vorlauf Wärmesenke (B125, Reg. 1070)" },
+      "kaeltespeicher": { "name": "Kältespeichertemperatur (B40, Reg. 1010)" }
     },
     "switch": {
       "heat_request": { "name": "Heizungsanforderung" },
       "ww_request": { "name": "Warmwasseranforderung" },
-      "ww_onetime": { "name": "Einmalige Warmwasserladung" }
+      "ww_onetime": { "name": "Einmalige Warmwasserladung" },
+      "cool_request": { "name": "Anforderung Kühlen (Reg. 1711)" }
     },
     "number": {
       "hka_temp_normal": { "name": "HK A Solltemperatur Normal" },
@@ -145,7 +171,37 @@
       "hkg_heat_limit": { "name": "Heizgrenze HK G" },
       "ww_target": { "name": "WW-Solltemperatur" },
       "ww_start": { "name": "WW-Ladung Starttemperatur" },
-      "ww_stop": { "name": "WW-Ladung Stopp-Temperatur" }
+      "ww_stop": { "name": "WW-Ladung Stopp-Temperatur" },
+      "hka_cool_normal": { "name": "HK A Kühlsolltemperatur Normal" },
+      "hkb_cool_normal": { "name": "HK B Kühlsolltemperatur Normal" },
+      "hkc_cool_normal": { "name": "HK C Kühlsolltemperatur Normal" },
+      "hkd_cool_normal": { "name": "HK D Kühlsolltemperatur Normal" },
+      "hke_cool_normal": { "name": "HK E Kühlsolltemperatur Normal" },
+      "hkf_cool_normal": { "name": "HK F Kühlsolltemperatur Normal" },
+      "hkg_cool_normal": { "name": "HK G Kühlsolltemperatur Normal" },
+      "hka_cool_eco": { "name": "HK A Kühlsolltemperatur Eco" },
+      "hkb_cool_eco": { "name": "HK B Kühlsolltemperatur Eco" },
+      "hkc_cool_eco": { "name": "HK C Kühlsolltemperatur Eco" },
+      "hkd_cool_eco": { "name": "HK D Kühlsolltemperatur Eco" },
+      "hke_cool_eco": { "name": "HK E Kühlsolltemperatur Eco" },
+      "hkf_cool_eco": { "name": "HK F Kühlsolltemperatur Eco" },
+      "hkg_cool_eco": { "name": "HK G Kühlsolltemperatur Eco" },
+      "hka_cool_limit": { "name": "Kühlgrenze HK A" },
+      "hkb_cool_limit": { "name": "Kühlgrenze HK B" },
+      "hkc_cool_limit": { "name": "Kühlgrenze HK C" },
+      "hkd_cool_limit": { "name": "Kühlgrenze HK D" },
+      "hke_cool_limit": { "name": "Kühlgrenze HK E" },
+      "hkf_cool_limit": { "name": "Kühlgrenze HK F" },
+      "hkg_cool_limit": { "name": "Kühlgrenze HK G" },
+      "hka_cool_vl": { "name": "Soll-Vorlauf Kühlen HK A" },
+      "hkb_cool_vl": { "name": "Soll-Vorlauf Kühlen HK B" },
+      "hkc_cool_vl": { "name": "Soll-Vorlauf Kühlen HK C" },
+      "hkd_cool_vl": { "name": "Soll-Vorlauf Kühlen HK D" },
+      "hke_cool_vl": { "name": "Soll-Vorlauf Kühlen HK E" },
+      "hkf_cool_vl": { "name": "Soll-Vorlauf Kühlen HK F" },
+      "hkg_cool_vl": { "name": "Soll-Vorlauf Kühlen HK G" },
+      "leistungsbegrenzung": { "name": "Leistungsbegrenzung WP (Reg. 4108)" },
+      "pv_zielwert": { "name": "PV-Zielwert (Reg. 88)" }
     },
     "select": {
       "betriebsart": { "name": "Betriebsart System" },

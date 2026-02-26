@@ -1,12 +1,11 @@
-# Datei: config_flow.py
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v2.0
+Version: v5.0
 Stand: 2026-02-26
 
-Änderungen v2.0:
-- Zweistufiger Config-Flow: Schritt 1 = Verbindung, Schritt 2 = Heizkreisauswahl
-- Options-Flow: Heizkreise nachträglich ändern (löst Reload aus)
+Änderungen v5.0 (Schritt 2):
+- Sensor-Gruppen-Auswahl in Schritt 2 (circuits) und Options-Flow
+- Config-Version 3 (Migration v2→v3: sensor_groups mit Defaults hinzufügen)
 """
 
 import socket
@@ -29,11 +28,42 @@ from .const import (
     CONF_HEATING_CIRCUITS,
     DEFAULT_HEATING_CIRCUITS,
     ALL_HEATING_CIRCUITS,
+    CONF_SENSOR_GROUPS,
+    DEFAULT_SENSOR_GROUPS,
+    ALL_SENSOR_GROUPS,
 )
 
 HEATING_CIRCUIT_SELECTOR = SelectSelector(
     SelectSelectorConfig(
-        options=ALL_HEATING_CIRCUITS,
+        options=[
+            {"value": "A", "label": "🏠 Heizkreis A"},
+            {"value": "B", "label": "🏠 Heizkreis B"},
+            {"value": "C", "label": "🏠 Heizkreis C"},
+            {"value": "D", "label": "🏠 Heizkreis D"},
+            {"value": "E", "label": "🏠 Heizkreis E"},
+            {"value": "F", "label": "🏠 Heizkreis F"},
+            {"value": "G", "label": "🏠 Heizkreis G"},
+        ],
+        multiple=True,
+        mode=SelectSelectorMode.LIST,
+    )
+)
+
+SENSOR_GROUP_LABELS_DE = {
+    "solar": "☀️ Solar (Kollektor, Leistung, Betriebsart)",
+    "pv_battery": "🔋 PV / Batterie (Überschuss, Produktion, SmartGrid, Strompreis)",
+    "cooling": "❄️ Kühlung (Kühlanforderung, Kühlsollwerte pro HK)",
+    "diagnostic": "🔧 Diagnose (Verdichter, EVU-Sperre, Ladepumpe, Ventile)",
+    "room_control": "🌡️ Einzelraumregelung (Raumtemperatur pro HK, Feuchte)",
+    "extended_temps": "📊 Erweiterte Temperaturen (Wärmesenke, Kältespeicher, Luftwärmetauscher)",
+}
+
+SENSOR_GROUP_SELECTOR = SelectSelector(
+    SelectSelectorConfig(
+        options=[
+            {"value": key, "label": label}
+            for key, label in SENSOR_GROUP_LABELS_DE.items()
+        ],
         multiple=True,
         mode=SelectSelectorMode.LIST,
     )
@@ -41,7 +71,7 @@ HEATING_CIRCUIT_SELECTOR = SelectSelector(
 
 
 class IDMHeatpumpConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 2
+    VERSION = 3
 
     def __init__(self):
         super().__init__()
@@ -55,7 +85,6 @@ class IDMHeatpumpConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             host = user_input[CONF_HOST]
             port = user_input.get(CONF_PORT, DEFAULT_PORT)
 
-            # Duplikatsprüfung
             for entry in self._async_current_entries():
                 if (
                     entry.data.get(CONF_HOST) == host
@@ -98,13 +127,15 @@ class IDMHeatpumpConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_circuits(self, user_input=None):
-        """Schritt 2: Heizkreise auswählen."""
+        """Schritt 2: Heizkreise + Sensor-Gruppen auswählen."""
         if user_input is not None:
-            selected = user_input.get(CONF_HEATING_CIRCUITS, DEFAULT_HEATING_CIRCUITS)
-            self._user_input[CONF_HEATING_CIRCUITS] = selected
+            selected_hc = user_input.get(CONF_HEATING_CIRCUITS, DEFAULT_HEATING_CIRCUITS)
+            selected_sg = user_input.get(CONF_SENSOR_GROUPS, DEFAULT_SENSOR_GROUPS)
+            self._user_input[CONF_HEATING_CIRCUITS] = selected_hc
+            self._user_input[CONF_SENSOR_GROUPS] = selected_sg
 
             return self.async_create_entry(
-                title="iDM Wärmepumpe",
+                title="iDM W\u00e4rmepumpe",
                 data=self._user_input,
             )
 
@@ -114,6 +145,10 @@ class IDMHeatpumpConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_HEATING_CIRCUITS,
                     default=DEFAULT_HEATING_CIRCUITS,
                 ): HEATING_CIRCUIT_SELECTOR,
+                vol.Required(
+                    CONF_SENSOR_GROUPS,
+                    default=DEFAULT_SENSOR_GROUPS,
+                ): SENSOR_GROUP_SELECTOR,
             }
         )
 
@@ -152,7 +187,6 @@ class IDMHeatpumpOptionsFlow(config_entries.OptionsFlow):
                 ),
             )
 
-            # Duplikatsprüfung
             for entry in self.hass.config_entries.async_entries(DOMAIN):
                 if (
                     entry.entry_id != self._entry.entry_id
@@ -172,6 +206,10 @@ class IDMHeatpumpOptionsFlow(config_entries.OptionsFlow):
         current_circuits = self._entry.options.get(
             CONF_HEATING_CIRCUITS,
             self._entry.data.get(CONF_HEATING_CIRCUITS, DEFAULT_HEATING_CIRCUITS),
+        )
+        current_groups = self._entry.options.get(
+            CONF_SENSOR_GROUPS,
+            self._entry.data.get(CONF_SENSOR_GROUPS, DEFAULT_SENSOR_GROUPS),
         )
 
         schema = vol.Schema(
@@ -208,6 +246,10 @@ class IDMHeatpumpOptionsFlow(config_entries.OptionsFlow):
                     CONF_HEATING_CIRCUITS,
                     default=current_circuits,
                 ): HEATING_CIRCUIT_SELECTOR,
+                vol.Required(
+                    CONF_SENSOR_GROUPS,
+                    default=current_groups,
+                ): SENSOR_GROUP_SELECTOR,
             }
         )
 
