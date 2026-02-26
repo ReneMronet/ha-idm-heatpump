@@ -139,7 +139,7 @@ Unterstützt werden Temperaturfühler, Energiemengen, Leistungen, PV-/Batteriewe
 - Energiemengen (`en_*`) sind als `state_class: total_increasing` definiert.  
 - Sollwerte (`number.*`) werden nur bei Änderung an die Wärmepumpe geschrieben, um EEPROM-Zyklen zu schonen.  
 - Übersetzungen sind in `translations/de.json` und `translations/en.json` enthalten.  
-- Getestet mit Home Assistant 2025.x.
+- Getestet mit Home Assistant 2026.2.3
 
 ### Controls
 - System operation mode (Standby, Auto, Away, etc.)
