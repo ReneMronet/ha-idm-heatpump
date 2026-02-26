@@ -61,7 +61,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
             IDMFloatNumber(
                 coordinator, client, host,
                 f"idm_hk{key}_curve", f"hk{key}_curve",
-                hc_reg(hc, "curve"), 0.0, 3.5, 0.1, 0.6,
+                hc_reg(hc, "curve"), 0.1, 3.5, 0.1, 0.6,
             ),
             IDMUcharNumber(
                 coordinator, client, host,
