@@ -1,16 +1,13 @@
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v5.0
+Version: v0.6.0
 Stand: 2026-02-26
 
-Änderungen v5.0 (Schritt 2 – Neue Features):
-- Sensor-Gruppen (solar, pv_battery, cooling, diagnostic, room_control, extended_temps)
-- ~48 neue Register (hohe + mittlere Priorität + Kühlung pro HK)
-- Kühl-Register in HC_REGISTERS: cool_normal, cool_eco, cool_limit, cool_vl
-- Raumtemperatur pro HK in HC_REGISTERS: room_temp
-- build_register_map() berücksichtigt sensor_groups
-- Auto-Detect: INVALID_FLOAT, INVALID_UCHAR Konstanten
-- Alle bisherigen Konstanten bleiben erhalten (Abwärtskompatibilität)
+Änderungen v0.6.0:
+- Raumtemperatur-Übernahme (externe Sensoren → WP via Modbus)
+- Schreib-Register 1650+i*2 pro HK (FLOAT)
+- Konfigurierbares Schreib-Intervall + Saisonale Automatik
+- EEPROM-Schutz: nur bei Änderung >0.1°C schreiben
 """
 
 DOMAIN = "idm_heatpump"
@@ -40,6 +37,46 @@ ALL_SENSOR_GROUPS = [
     "room_control",
     "extended_temps",
 ]
+
+# -------------------------------------------------------------------
+# Raumtemperatur-Übernahme (externe Sensoren → WP)
+# -------------------------------------------------------------------
+CONF_ROOM_TEMP_ENTITIES = "room_temp_entities"
+CONF_ROOM_TEMP_INTERVAL = "room_temp_interval"
+CONF_ROOM_TEMP_SEASON_ENABLED = "room_temp_season_enabled"
+CONF_ROOM_TEMP_SEASON_START_MONTH = "room_temp_season_start_month"
+CONF_ROOM_TEMP_SEASON_START_DAY = "room_temp_season_start_day"
+CONF_ROOM_TEMP_SEASON_END_MONTH = "room_temp_season_end_month"
+CONF_ROOM_TEMP_SEASON_END_DAY = "room_temp_season_end_day"
+
+DEFAULT_ROOM_TEMP_ENTITIES = {}
+DEFAULT_ROOM_TEMP_INTERVAL = "on_change"
+DEFAULT_ROOM_TEMP_SEASON_ENABLED = False
+DEFAULT_ROOM_TEMP_SEASON_START_MONTH = 10
+DEFAULT_ROOM_TEMP_SEASON_START_DAY = 1
+DEFAULT_ROOM_TEMP_SEASON_END_MONTH = 4
+DEFAULT_ROOM_TEMP_SEASON_END_DAY = 30
+
+# Schreib-Register: Basis 1650 + i*2 (FLOAT)
+REG_ROOM_TEMP_WRITE_BASE = 1650
+
+ROOM_TEMP_WRITE_TOLERANCE = 0.1  # EEPROM-Schutz: nur bei >0.1°C Differenz
+ROOM_TEMP_NO_SENSOR = -1.0       # Wert für "kein Fühler vorhanden"
+
+ROOM_TEMP_INTERVAL_OPTIONS = {
+    "on_change": "Bei Änderung",
+    "300": "5 Minuten",
+    "600": "10 Minuten",
+    "900": "15 Minuten",
+    "1800": "30 Minuten",
+    "3600": "60 Minuten",
+}
+
+
+def hc_room_temp_write_reg(circuit: str) -> int:
+    """Berechnet die Schreib-Register-Adresse für Raumtemperatur eines HK."""
+    return REG_ROOM_TEMP_WRITE_BASE + HC_INDEX[circuit] * 2
+
 
 # -------------------------------------------------------------------
 # Register-Datentypen

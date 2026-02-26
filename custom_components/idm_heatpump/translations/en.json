@@ -18,6 +18,25 @@
           "heating_circuits": "Active Heating Circuits",
           "sensor_groups": "Sensor Groups"
         }
+      },
+      "room_temp": {
+        "title": "Room Temperature Forwarding",
+        "description": "Assign an external temperature sensor to each heating circuit (optional). Configure interval and seasonal automation.",
+        "data": {
+          "room_temp_a": "🌡️ HC A Room Sensor",
+          "room_temp_b": "🌡️ HC B Room Sensor",
+          "room_temp_c": "🌡️ HC C Room Sensor",
+          "room_temp_d": "🌡️ HC D Room Sensor",
+          "room_temp_e": "🌡️ HC E Room Sensor",
+          "room_temp_f": "🌡️ HC F Room Sensor",
+          "room_temp_g": "🌡️ HC G Room Sensor",
+          "room_temp_interval": "Write Interval",
+          "room_temp_season_enabled": "Seasonal Automation",
+          "room_temp_season_start_month": "Season Start Month",
+          "room_temp_season_start_day": "Season Start Day",
+          "room_temp_season_end_month": "Season End Month",
+          "room_temp_season_end_day": "Season End Day"
+        }
       }
     },
     "error": {
@@ -41,6 +60,25 @@
           "update_interval": "Update Interval (seconds)",
           "heating_circuits": "Active Heating Circuits",
           "sensor_groups": "Sensor Groups"
+        }
+      },
+      "room_temp": {
+        "title": "Room Temperature Forwarding",
+        "description": "Assign an external temperature sensor to each heating circuit (optional). Configure interval and seasonal automation.",
+        "data": {
+          "room_temp_a": "🌡️ HC A Room Sensor",
+          "room_temp_b": "🌡️ HC B Room Sensor",
+          "room_temp_c": "🌡️ HC C Room Sensor",
+          "room_temp_d": "🌡️ HC D Room Sensor",
+          "room_temp_e": "🌡️ HC E Room Sensor",
+          "room_temp_f": "🌡️ HC F Room Sensor",
+          "room_temp_g": "🌡️ HC G Room Sensor",
+          "room_temp_interval": "Write Interval",
+          "room_temp_season_enabled": "Seasonal Automation",
+          "room_temp_season_start_month": "Season Start Month",
+          "room_temp_season_start_day": "Season Start Day",
+          "room_temp_season_end_month": "Season End Month",
+          "room_temp_season_end_day": "Season End Day"
         }
       }
     }
@@ -297,6 +335,9 @@
       },
       "cool_request": {
         "name": "Cooling Request (Reg. 1711)"
+      },
+      "room_temp_master": {
+        "name": "Room Temperature Forwarding"
       }
     },
     "number": {

@@ -31,7 +31,13 @@
           "room_temp_f": "🌡️ HK F Raumsensor",
           "room_temp_g": "🌡️ HK G Raumsensor",
           "room_temp_interval": "Schreib-Intervall",
-          "room_temp_season_enabled": "Saisonale Automatik",
+          "room_temp_season_enabled": "Saisonale Automatik"
+        }
+      },
+      "room_temp_season": {
+        "title": "Saison-Zeitraum",
+        "description": "Definiere den Zeitraum, in dem die Raumtemperatur-Übernahme automatisch aktiv ist.",
+        "data": {
           "room_temp_season_start_month": "Saison-Start Monat",
           "room_temp_season_start_day": "Saison-Start Tag",
           "room_temp_season_end_month": "Saison-Ende Monat",
@@ -74,7 +80,13 @@
           "room_temp_f": "🌡️ HK F Raumsensor",
           "room_temp_g": "🌡️ HK G Raumsensor",
           "room_temp_interval": "Schreib-Intervall",
-          "room_temp_season_enabled": "Saisonale Automatik",
+          "room_temp_season_enabled": "Saisonale Automatik"
+        }
+      },
+      "room_temp_season": {
+        "title": "Saison-Zeitraum",
+        "description": "Definiere den Zeitraum, in dem die Raumtemperatur-Übernahme automatisch aktiv ist.",
+        "data": {
           "room_temp_season_start_month": "Saison-Start Monat",
           "room_temp_season_start_day": "Saison-Start Tag",
           "room_temp_season_end_month": "Saison-Ende Monat",
