@@ -73,7 +73,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
             IDMFloatNumber(
                 coordinator, client, host,
                 f"idm_hk{key}_curve", f"hk{key}_curve",
-                hc_reg(hc, "curve"), 0.1, 3.5, 0.1, 0.6,
+                hc_reg(hc, "curve"), 0.1, 3.5, 0.01, 0.6,
             ),
             IDMUcharNumber(
                 coordinator, client, host,
@@ -198,6 +198,7 @@ class IDMFloatNumber(CoordinatorEntity, NumberEntity):
         self._attr_native_min_value = float(min_value)
         self._attr_native_max_value = float(max_value)
         self._attr_native_step = float(step)
+        self._attr_suggested_display_precision = 2 if float(step) < 0.1 else 1
         self._default = float(default)
         self._attr_native_unit_of_measurement = unit or UnitOfTemperature.CELSIUS
         self._attr_device_class = "temperature" if unit is None else None
