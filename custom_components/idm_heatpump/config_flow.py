@@ -1,7 +1,14 @@
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v0.7.0
-Stand: 2026-02-26
+Version: v0.8.0
+Stand: 2026-11-11
+
+Änderungen v0.8.0:
+- Schritt Raumtemperatur: pro HK Mehrfachauswahl der Raumsensoren
+- Speichert room_temp_sources (Listen) und zusätzlich room_temp_entities
+  (erster Sensor je HK) für den Rückweg auf v0.7.x
+- Felder mit suggested_value statt default, damit sie sich leeren lassen
+- Config-Version bleibt 5 (keine Migration nötig)
 
 Änderungen v0.7.0:
 - Schreib-Intervall: "Deaktiviert" als Standard
@@ -44,13 +51,14 @@ from .const import (
     DEFAULT_SENSOR_GROUPS,
     ALL_SENSOR_GROUPS,
     CONF_ROOM_TEMP_ENTITIES,
+    CONF_ROOM_TEMP_SOURCES,
     CONF_ROOM_TEMP_INTERVAL,
     CONF_ROOM_TEMP_SEASON_ENABLED,
     CONF_ROOM_TEMP_SEASON_START_MONTH,
     CONF_ROOM_TEMP_SEASON_START_DAY,
     CONF_ROOM_TEMP_SEASON_END_MONTH,
     CONF_ROOM_TEMP_SEASON_END_DAY,
-    DEFAULT_ROOM_TEMP_ENTITIES,
+    DEFAULT_ROOM_TEMP_SOURCES,
     DEFAULT_ROOM_TEMP_INTERVAL,
     DEFAULT_ROOM_TEMP_SEASON_ENABLED,
     DEFAULT_ROOM_TEMP_SEASON_START_MONTH,
@@ -58,6 +66,8 @@ from .const import (
     DEFAULT_ROOM_TEMP_SEASON_END_MONTH,
     DEFAULT_ROOM_TEMP_SEASON_END_DAY,
     ROOM_TEMP_INTERVAL_OPTIONS,
+    normalize_room_temp_sources,
+    room_temp_sources_from_config,
 )
 
 # -------------------------------------------------------------------
@@ -104,6 +114,7 @@ TEMP_ENTITY_SELECTOR = EntitySelector(
     EntitySelectorConfig(
         domain="sensor",
         device_class="temperature",
+        multiple=True,
     )
 )
 
@@ -133,18 +144,20 @@ DAY_SELECTOR = NumberSelector(
 
 def _build_room_temp_schema(
     heating_circuits: list[str],
-    current_entities: dict,
+    current_sources: dict,
     current_interval: str,
     current_season_enabled: bool,
 ) -> vol.Schema:
     """Schema für Schritt 3a: Sensoren, Intervall, Saison-Toggle."""
     fields = {}
 
-    # Entity-Picker pro aktivem Heizkreis
+    # Mehrfachauswahl der Raumsensoren pro aktivem Heizkreis (v0.8.0).
+    # suggested_value statt default: sonst setzt voluptuous beim Leeren
+    # des Feldes die alten Sensoren wieder ein.
     for hc in sorted(heating_circuits):
         key = f"room_temp_{hc.lower()}"
-        current = current_entities.get(hc, "")
-        fields[vol.Optional(key, default=current)] = TEMP_ENTITY_SELECTOR
+        current = list(current_sources.get(hc, []))
+        fields[vol.Optional(key, description={"suggested_value": current})] = TEMP_ENTITY_SELECTOR
 
     # Schreib-Intervall
     fields[vol.Required(
@@ -188,22 +201,23 @@ def _build_season_schema(
     })
 
 
-def _extract_room_temp_entities(user_input: dict, heating_circuits: list[str]) -> dict:
-    """Extrahiert die Entity-Zuordnungen aus dem Formular-Input."""
-    entities = {}
+def _extract_room_temp_sources(user_input: dict, heating_circuits: list[str]) -> dict:
+    """Extrahiert die Sensorlisten pro HK aus dem Formular-Input (v0.8.0)."""
+    raw = {}
     for hc in heating_circuits:
         key = f"room_temp_{hc.lower()}"
-        entity_id = user_input.get(key, "")
-        if entity_id:
-            entities[hc] = entity_id
-    return entities
+        value = user_input.get(key)
+        if value:
+            raw[hc] = value
+    return normalize_room_temp_sources(raw)
 
 
 def _store_room_temp_input(target: dict, user_input: dict, heating_circuits: list[str]):
     """Speichert Raumtemperatur-Daten aus Schritt 3a in target dict."""
-    target[CONF_ROOM_TEMP_ENTITIES] = _extract_room_temp_entities(
-        user_input, heating_circuits
-    )
+    sources = _extract_room_temp_sources(user_input, heating_circuits)
+    target[CONF_ROOM_TEMP_SOURCES] = sources
+    # Erster Sensor je HK im alten Format: Rückweg auf v0.7.x ohne Umbau
+    target[CONF_ROOM_TEMP_ENTITIES] = {hc: ids[0] for hc, ids in sources.items()}
     target[CONF_ROOM_TEMP_INTERVAL] = user_input.get(
         CONF_ROOM_TEMP_INTERVAL, DEFAULT_ROOM_TEMP_INTERVAL
     )
@@ -344,7 +358,7 @@ class IDMHeatpumpConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         schema = _build_room_temp_schema(
             heating_circuits=heating_circuits,
-            current_entities=DEFAULT_ROOM_TEMP_ENTITIES,
+            current_sources=DEFAULT_ROOM_TEMP_SOURCES,
             current_interval=DEFAULT_ROOM_TEMP_INTERVAL,
             current_season_enabled=DEFAULT_ROOM_TEMP_SEASON_ENABLED,
         )
@@ -467,11 +481,13 @@ class IDMHeatpumpOptionsFlow(config_entries.OptionsFlow):
             _store_season_defaults(self._options)
             return self.async_create_entry(title="", data=self._options)
 
-        current_entities = self._get(CONF_ROOM_TEMP_ENTITIES, DEFAULT_ROOM_TEMP_ENTITIES)
+        current_sources = room_temp_sources_from_config(
+            self._entry.options, self._entry.data
+        )
 
         schema = _build_room_temp_schema(
             heating_circuits=heating_circuits,
-            current_entities=current_entities,
+            current_sources=current_sources,
             current_interval=self._get(CONF_ROOM_TEMP_INTERVAL, DEFAULT_ROOM_TEMP_INTERVAL),
             current_season_enabled=self._get(
                 CONF_ROOM_TEMP_SEASON_ENABLED, DEFAULT_ROOM_TEMP_SEASON_ENABLED

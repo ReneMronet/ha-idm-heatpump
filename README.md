@@ -13,6 +13,7 @@ This integration allows you to monitor and control your iDM heat pump with Navig
 * **7 heating circuits** (A–G) dynamically configurable
 * **6 sensor groups**: Solar, PV/Battery, Cooling, Diagnostic, Room Control, Extended Temps
 * **Room temperature forwarding**: External sensors (e.g. Shelly H&T) → heat pump via Modbus
+* **Multiple room sensors per heating circuit**: average of the enabled sensors, one switch per sensor (NEW in v0.8.0)
 * **Temperature offset** per heating circuit for fine-tuning (NEW in v0.7.0)
 * **Seasonal automation** with master switch
 * **EEPROM protection**: Write operations only on actual value changes
@@ -52,7 +53,7 @@ This integration allows you to monitor and control your iDM heat pump with Navig
 1. Go to Settings → Devices & Services → "Add Integration" → search "iDM Heat Pump"
 2. **Connection**: IP address, Port (502), Unit ID (1), Update interval (30s)
 3. **Heating circuits & sensor groups**: Select active heating circuits (A–G) and sensor groups
-4. **Room temperature forwarding**: Assign external temperature sensors per heating circuit, choose write interval, enable seasonal automation
+4. **Room temperature forwarding**: Select one or more external temperature sensors per heating circuit, choose write interval, enable seasonal automation
 5. **Season period** (only if seasonal automation is enabled): Start/end month and day
 
 ### Reconfiguration
@@ -133,6 +134,7 @@ Unterstützt werden Temperaturfühler, Energiemengen, Leistungen, PV-/Batteriewe
 | `switch.idm_ww_onetime` | Einmalige Warmwasserladung | 1713 |
 | `switch.idm_cool_request` | Kühlanforderung (Cooling group) | 1711 |
 | `switch.idm_room_temp_master` | Raumtemperatur-Übernahme Master | – |
+| `switch.idm_hkX_room_temp_src_<sensor>` | Raumsensor verwenden (je HK und Sensor, v0.8.0) | – |
 
 ### Numbers (per heating circuit)
 
@@ -162,6 +164,14 @@ Unterstützt werden Temperaturfühler, Energiemengen, Leistungen, PV-/Batteriewe
 
 Forwards room temperatures from HA sensors to the heat pump (registers 1650+). The heat pump uses these values for heating curve adjustment.
 
+### Multiple Sensors per Heating Circuit (NEW in v0.8.0)
+
+* Select one or more temperature sensors per heating circuit in the configuration dialog.
+* For every heating circuit and sensor there is a switch (`switch.idm_hkX_room_temp_src_<sensor>`). ON = the sensor counts, OFF = it is ignored. New switches start ON; the state is restored after a restart.
+* The heat pump receives the average of the enabled sensors (rounded to 0.1 °C), then the temperature offset is added.
+* Unavailable or invalid sensors are skipped. If no sensor of a heating circuit is usable (all off or unavailable), -1.0 ("no sensor") is written.
+* Existing configurations with one sensor per heating circuit keep working. The first sensor per circuit is still stored in `room_temp_entities`, so going back to v0.7.x needs no reconfiguration.
+
 ### Write Interval
 
 | Option | Description |
@@ -172,7 +182,9 @@ Forwards room temperatures from HA sensors to the heat pump (registers 1650+). T
 
 ### Master Switch
 
-`switch.idm_room_temp_master` – Manual on/off for forwarding. OFF overrides seasonal automation.
+`switch.idm_room_temp_master` – Manual on/off for forwarding. OFF overrides seasonal automation. The state is restored after a Home Assistant restart (v0.8.0).
+
+Attributes (v0.8.0): `hk_x_mittelwert` (average before offset) and `hk_x_verwendet` (sensors currently used) per heating circuit. They are not stored in the recorder.
 
 ### Seasonal Automation
 
@@ -218,6 +230,18 @@ If you encounter issues:
 4. Try increasing the scan interval if you experience timeouts
 
 ## Changelog
+
+### v0.8.0 (2026-11-11)
+
+**Multiple Room Sensors per Heating Circuit**
+
+* **NEW:** Select one or more room sensors per heating circuit (multi-select in the configuration dialog)
+* **NEW:** One switch per heating circuit and sensor (`switch.idm_hkX_room_temp_src_<sensor>`), ON by default, restored after restart
+* **NEW:** The heat pump receives the average of the enabled sensors; unavailable or invalid sensors are skipped; none usable → -1.0
+* **NEW:** Master switch attributes `hk_x_mittelwert` / `hk_x_verwendet` (not recorded)
+* **FIX:** Master switch state is restored after a Home Assistant restart (it came back ON after every restart)
+* **CHANGE:** An offset change is only written while forwarding is running (no extra write during startup; nothing is written with interval "Disabled")
+* Config stays version 5: new key `room_temp_sources`; `room_temp_entities` is kept (first sensor) for downgrades
 
 ### v0.7.0 (2026-02-26)
 

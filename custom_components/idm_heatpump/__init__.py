@@ -1,7 +1,15 @@
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v0.7.0
-Stand: 2026-02-26
+Version: v0.8.0
+Stand: 2026-11-11
+
+Änderungen v0.8.0:
+- Mehrere Raumsensoren pro HK: an die WP geht der Mittelwert der
+  eingeschalteten Sensoren; ausgefallene werden übersprungen,
+  alle aus/ausgefallen → -1.0
+- Pro HK und Sensor ein Kippschalter „verwenden“ (switch.py)
+- Konfiguration: room_temp_sources {HK: [Sensoren]}, room_temp_entities
+  bleibt als Rückweg auf v0.7.x erhalten (keine Migration)
 
 Änderungen v0.7.0:
 - Temperatur-Offset pro HK (Number-Entity, ±5°C)
@@ -16,6 +24,7 @@ Stand: 2026-02-26
 """
 
 import logging
+import math
 from datetime import timedelta, date, time, datetime
 
 from homeassistant.const import (
@@ -63,6 +72,8 @@ from .const import (
     ROOM_TEMP_NO_SENSOR,
     hc_room_temp_write_reg,
     build_register_map,
+    room_temp_sources_from_config,
+    room_temp_source_unique_id,
 )
 from .modbus_handler import IDMModbusHandler
 
@@ -85,9 +96,11 @@ class RoomTempForwarder:
 
     Features:
     - Schreib-Intervall: bei State-Änderung, Timer (5–60 Min.) oder Deaktiviert
+    - Mehrere Sensoren pro HK (v0.8.0): Mittelwert der eingeschalteten,
+      gültigen Sensoren; jeder Sensor hat einen Kippschalter „verwenden“
     - Temperatur-Offset pro HK: Wert wird vor dem Schreiben addiert (v0.7.0)
     - EEPROM-Schutz: nur bei Differenz > 0.1°C schreiben
-    - Offline-Erkennung: -1.0 schreiben wenn Sensor unavailable
+    - Offline-Erkennung: -1.0 schreiben wenn kein Sensor eines HK nutzbar ist
     - Saisonale Automatik: aktiv nur innerhalb Saison-Zeitraum
     - Master-Switch: manuell AUS übersteuert Saison-Automatik
     """
@@ -96,7 +109,7 @@ class RoomTempForwarder:
         self,
         hass: HomeAssistant,
         client: IDMModbusHandler,
-        entity_map: dict[str, str],
+        sources: dict[str, list[str]],
         interval: str,
         season_enabled: bool,
         season_start: tuple[int, int],
@@ -104,7 +117,8 @@ class RoomTempForwarder:
     ):
         self._hass = hass
         self._client = client
-        self._entity_map = entity_map  # {"A": "sensor.xxx", "C": "sensor.yyy"}
+        # {"A": ["sensor.xxx"], "C": ["sensor.wz", "sensor.sz1", "sensor.sz2"]}
+        self._sources = {hc: list(ids) for hc, ids in sources.items()}
         self._interval = interval
         self._season_enabled = season_enabled
         self._season_start = season_start  # (month, day)
@@ -112,9 +126,64 @@ class RoomTempForwarder:
 
         self._last_written: dict[str, float | None] = {}
         self._unsub_listeners: list = []
+        self._running = False  # Listener/Timer aktiv (nicht bei Intervall „Deaktiviert“)
         self._master_switch_on = True
         self._manual_override = False  # True wenn manuell ausgeschaltet
         self._offsets: dict[str, float] = {}  # {"A": -2.0, "C": 1.5}
+        # Kippschalter je (HK, Sensor); fehlt ein Eintrag, gilt der Sensor als EIN
+        self._source_enabled: dict[tuple[str, str], bool] = {}
+
+    @property
+    def sources(self) -> dict[str, list[str]]:
+        """Konfigurierte Sensoren je Heizkreis."""
+        return self._sources
+
+    def is_source_enabled(self, hc: str, entity_id: str) -> bool:
+        """Ist der Sensor für diesen HK eingeschaltet?"""
+        return self._source_enabled.get((hc, entity_id), True)
+
+    def set_source_enabled(self, hc: str, entity_id: str, enabled: bool, write: bool = True):
+        """Wird vom Sensor-Kippschalter aufgerufen (v0.8.0).
+
+        write=False beim Wiederherstellen nach dem Start: dann schreibt
+        async_start() einmal mit dem richtigen Stand.
+        """
+        self._source_enabled[(hc, entity_id)] = enabled
+        _LOGGER.info(
+            "Raumtemperatur HK %s: Sensor %s %s",
+            hc, entity_id, "EIN" if enabled else "AUS",
+        )
+        if write and self._running and self.is_active and hc in self._sources:
+            self._hass.async_create_task(self._write_hc(hc))
+
+    def compute(self, hc: str) -> tuple[float | None, list[str]]:
+        """Mittelwert der eingeschalteten, gültigen Sensoren eines HK.
+
+        Liefert (Mittelwert auf 0.1 gerundet oder None, verwendete Sensoren).
+        """
+        values: list[float] = []
+        used: list[str] = []
+        for entity_id in self._sources.get(hc, []):
+            if not self.is_source_enabled(hc, entity_id):
+                continue
+            state = self._hass.states.get(entity_id)
+            if state is None or state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN, None, ""):
+                continue
+            try:
+                value = float(state.state)
+            except (ValueError, TypeError):
+                _LOGGER.debug(
+                    "Raumtemperatur HK %s: Ungültiger Wert '%s' von %s – übersprungen",
+                    hc, state.state, entity_id,
+                )
+                continue
+            if not math.isfinite(value):
+                continue
+            values.append(value)
+            used.append(entity_id)
+        if not values:
+            return None, []
+        return round(sum(values) / len(values), 1), used
 
     def get_offset(self, hc: str) -> float:
         """Liefert den aktuellen Offset für einen Heizkreis."""
@@ -128,14 +197,12 @@ class RoomTempForwarder:
             "Raumtemperatur-Offset HK %s: %.1f → %.1f°C",
             hc, old, value,
         )
-        # Wert mit neuem Offset sofort neu schreiben
-        if self.is_active and hc in self._entity_map:
+        # Wert mit neuem Offset sofort neu schreiben – erst wenn die Weiterleitung
+        # läuft (v0.8.0): beim Start schreibt async_start() einmal mit dem
+        # wiederhergestellten Stand aller Schalter und Offsets.
+        if self._running and self.is_active and hc in self._sources:
             self._last_written.pop(hc, None)  # Cache invalidieren
-            state = self._hass.states.get(self._entity_map[hc])
-            state_value = state.state if state else STATE_UNAVAILABLE
-            self._hass.async_create_task(
-                self._write_single(hc, state_value)
-            )
+            self._hass.async_create_task(self._write_hc(hc))
 
     @property
     def is_active(self) -> bool:
@@ -173,7 +240,7 @@ class RoomTempForwarder:
 
     async def async_start(self):
         """Startet die Listener/Timer."""
-        if not self._entity_map:
+        if not self._sources:
             _LOGGER.debug("Raumtemperatur-Übernahme: Keine Sensoren konfiguriert")
             return
 
@@ -193,8 +260,8 @@ class RoomTempForwarder:
             )
 
         if self._interval == "on_change":
-            # State-Change-Listener
-            entity_ids = list(self._entity_map.values())
+            # State-Change-Listener (jeder Sensor einmal, auch wenn er in mehreren HK steckt)
+            entity_ids = sorted({eid for ids in self._sources.values() for eid in ids})
             self._unsub_listeners.append(
                 async_track_state_change_event(
                     self._hass, entity_ids, self._async_state_changed
@@ -219,6 +286,8 @@ class RoomTempForwarder:
                 seconds,
             )
 
+        self._running = True
+
         # Initialer Schreibvorgang
         if self.is_active:
             await self._write_all_active()
@@ -227,6 +296,7 @@ class RoomTempForwarder:
 
     async def async_stop(self):
         """Stoppt alle Listener/Timer und schreibt -1.0."""
+        self._running = False
         for unsub in self._unsub_listeners:
             unsub()
         self._unsub_listeners.clear()
@@ -243,13 +313,10 @@ class RoomTempForwarder:
         if new_state is None:
             return
 
-        # Finde den zugehörigen Heizkreis
-        for hc, eid in self._entity_map.items():
-            if eid == entity_id:
-                self._hass.async_create_task(
-                    self._write_single(hc, new_state.state)
-                )
-                break
+        # Alle Heizkreise neu berechnen, die diesen Sensor verwenden
+        for hc, ids in self._sources.items():
+            if entity_id in ids and self.is_source_enabled(hc, entity_id):
+                self._hass.async_create_task(self._write_hc(hc))
 
     async def _async_timer_tick(self, now=None):
         """Timer-Callback: Alle konfigurierten Werte schreiben."""
@@ -283,22 +350,21 @@ class RoomTempForwarder:
                 {"active": False},
             )
 
-    async def _write_single(self, hc: str, state_value: str):
-        """Schreibt einen einzelnen Temperaturwert mit EEPROM-Schutz und Offset."""
+    async def _write_hc(self, hc: str):
+        """Schreibt den Mittelwert eines HK mit EEPROM-Schutz und Offset (v0.8.0)."""
         register = hc_room_temp_write_reg(hc)
 
-        if state_value in (STATE_UNAVAILABLE, STATE_UNKNOWN, None, ""):
+        temp, used = self.compute(hc)
+        if temp is None:
+            # Kein Sensor eingeschaltet oder alle ausgefallen
             await self._write_if_changed(hc, register, ROOM_TEMP_NO_SENSOR)
             return
 
-        try:
-            temp = round(float(state_value), 1)
-        except (ValueError, TypeError):
-            _LOGGER.warning(
-                "Raumtemperatur HK %s: Ungültiger Wert '%s' von %s",
-                hc, state_value, self._entity_map.get(hc),
+        if len(used) > 1:
+            _LOGGER.debug(
+                "Raumtemperatur HK %s: Mittelwert %.1f°C aus %s",
+                hc, temp, ", ".join(used),
             )
-            return
 
         # Offset anwenden (v0.7.0)
         offset = self.get_offset(hc)
@@ -334,15 +400,13 @@ class RoomTempForwarder:
             )
 
     async def _write_all_active(self):
-        """Liest alle konfigurierten Sensoren und schreibt die Werte."""
-        for hc, entity_id in self._entity_map.items():
-            state = self._hass.states.get(entity_id)
-            state_value = state.state if state else STATE_UNAVAILABLE
-            await self._write_single(hc, state_value)
+        """Berechnet alle Heizkreise und schreibt die Werte."""
+        for hc in self._sources:
+            await self._write_hc(hc)
 
     async def _write_all_inactive(self):
         """Schreibt -1.0 in alle konfigurierten Register."""
-        for hc in self._entity_map:
+        for hc in self._sources:
             register = hc_room_temp_write_reg(hc)
             await self._write_if_changed(hc, register, ROOM_TEMP_NO_SENSOR)
         _LOGGER.info("Raumtemperatur-Übernahme: -1.0 in alle Register geschrieben")
@@ -356,6 +420,7 @@ def build_expected_unique_ids(
     heating_circuits: list[str],
     sensor_groups: list[str],
     room_temp_entities: dict | None = None,
+    room_temp_sources: dict | None = None,
 ) -> set[str]:
     """Erzeugt die Menge aller unique_ids, die bei der aktuellen Konfiguration
     existieren sollen. Wird zum Aufräumen verwaister Entitäten verwendet."""
@@ -392,6 +457,11 @@ def build_expected_unique_ids(
         for hc in room_temp_entities:
             key = hc.lower()
             ids.add(f"idm_hk{key}_room_temp_offset")
+
+    # --- Kippschalter je HK und Raumsensor (v0.8.0) ---
+    for hc, sources in (room_temp_sources or {}).items():
+        for entity_id in sources:
+            ids.add(room_temp_source_unique_id(hc, entity_id))
 
     # --- Pro Heizkreis (immer) ---
     for hc in heating_circuits:
@@ -469,10 +539,14 @@ def build_expected_unique_ids(
     return ids
 
 
-async def _async_cleanup_entities(hass, entry, heating_circuits, sensor_groups, room_temp_entities):
+async def _async_cleanup_entities(
+    hass, entry, heating_circuits, sensor_groups, room_temp_entities, room_temp_sources=None
+):
     """Entfernt verwaiste Entitäten, die nicht mehr zur Konfiguration gehören."""
     registry = er.async_get(hass)
-    expected = build_expected_unique_ids(heating_circuits, sensor_groups, room_temp_entities)
+    expected = build_expected_unique_ids(
+        heating_circuits, sensor_groups, room_temp_entities, room_temp_sources
+    )
 
     entries = er.async_entries_for_config_entry(registry, entry.entry_id)
     removed = 0
@@ -516,7 +590,10 @@ async def async_setup_entry(hass, entry):
     sensor_groups = _get_config(entry, CONF_SENSOR_GROUPS, DEFAULT_SENSOR_GROUPS)
 
     # Raumtemperatur-Übernahme Konfiguration
-    room_temp_entities = _get_config(entry, CONF_ROOM_TEMP_ENTITIES, DEFAULT_ROOM_TEMP_ENTITIES)
+    # v0.8.0: Sensorlisten pro HK; ältere Konfigurationen (ein Sensor je HK)
+    # werden beim Lesen zu Listen mit einem Eintrag.
+    room_temp_sources = room_temp_sources_from_config(entry.options, entry.data)
+    room_temp_entities = {hc: ids[0] for hc, ids in room_temp_sources.items()}
     room_temp_interval = _get_config(entry, CONF_ROOM_TEMP_INTERVAL, DEFAULT_ROOM_TEMP_INTERVAL)
     room_temp_offsets = _get_config(entry, CONF_ROOM_TEMP_OFFSETS, DEFAULT_ROOM_TEMP_OFFSETS)
     season_enabled = _get_config(entry, CONF_ROOM_TEMP_SEASON_ENABLED, DEFAULT_ROOM_TEMP_SEASON_ENABLED)
@@ -562,11 +639,11 @@ async def async_setup_entry(hass, entry):
 
     # --- RoomTempForwarder erstellen ---
     forwarder = None
-    if room_temp_entities:
+    if room_temp_sources:
         forwarder = RoomTempForwarder(
             hass=hass,
             client=client,
-            entity_map=room_temp_entities,
+            sources=room_temp_sources,
             interval=room_temp_interval,
             season_enabled=season_enabled,
             season_start=season_start,
@@ -582,6 +659,7 @@ async def async_setup_entry(hass, entry):
         "sensor_groups": sensor_groups,
         "update_interval": update_interval,
         "room_temp_entities": room_temp_entities,
+        "room_temp_sources": room_temp_sources,
         "room_temp_forwarder": forwarder,
         "room_temp_offsets": room_temp_offsets,
     }
@@ -595,7 +673,9 @@ async def async_setup_entry(hass, entry):
         await forwarder.async_start()
 
     # Verwaiste Entitäten aufräumen
-    await _async_cleanup_entities(hass, entry, heating_circuits, sensor_groups, room_temp_entities)
+    await _async_cleanup_entities(
+        hass, entry, heating_circuits, sensor_groups, room_temp_entities, room_temp_sources
+    )
 
     return True
 

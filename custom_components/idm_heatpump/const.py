@@ -1,7 +1,11 @@
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v0.7.0
-Stand: 2026-02-26
+Version: v0.8.0
+Stand: 2026-11-11
+
+Änderungen v0.8.0:
+- Mehrere Raumsensoren pro HK (room_temp_sources), Mittelwert an die WP
+- Hilfsfunktionen für Sensorlisten und unique_id der Sensor-Kippschalter
 
 Änderungen v0.7.0:
 - Temperatur-Offset pro HK (Number-Entity, ±5°C)
@@ -85,6 +89,54 @@ ROOM_TEMP_OFFSET_MIN = -5.0
 ROOM_TEMP_OFFSET_MAX = 5.0
 ROOM_TEMP_OFFSET_STEP = 0.5
 ROOM_TEMP_OFFSET_DEFAULT = 0.0
+
+# Mehrere Raumsensoren pro HK (v0.8.0)
+# Gespeichert als {HK: [entity_id, ...]}. room_temp_entities ({HK: entity_id})
+# wird zusätzlich mit dem ersten Sensor je HK geschrieben, damit ein Rückweg
+# auf v0.7.x ohne Konfigurationsänderung funktioniert.
+CONF_ROOM_TEMP_SOURCES = "room_temp_sources"
+DEFAULT_ROOM_TEMP_SOURCES = {}
+
+
+def normalize_room_temp_sources(sources, entities=None) -> dict[str, list[str]]:
+    """Liefert die Raumsensoren als {HK: [entity_id, ...]}.
+
+    Fehlt room_temp_sources (Konfiguration aus v0.7.x oder älter), wird
+    room_temp_entities übernommen: der bisherige Sensor wird zur Liste mit
+    einem Eintrag. Doppelte und leere Einträge fallen weg.
+    """
+    raw = sources if isinstance(sources, dict) and sources else entities
+    result: dict[str, list[str]] = {}
+    if not isinstance(raw, dict):
+        return result
+    for hc, value in raw.items():
+        if isinstance(value, str):
+            value = [value]
+        if not isinstance(value, (list, tuple)):
+            continue
+        ids = [
+            eid
+            for eid in dict.fromkeys(v.strip() for v in value if isinstance(v, str))
+            if eid
+        ]
+        if ids:
+            result[hc] = ids
+    return result
+
+
+def room_temp_sources_from_config(*configs) -> dict[str, list[str]]:
+    """Raumsensoren aus der ersten Konfiguration (options, data), die sie enthält."""
+    for cfg in configs:
+        if cfg and (CONF_ROOM_TEMP_SOURCES in cfg or CONF_ROOM_TEMP_ENTITIES in cfg):
+            return normalize_room_temp_sources(
+                cfg.get(CONF_ROOM_TEMP_SOURCES), cfg.get(CONF_ROOM_TEMP_ENTITIES)
+            )
+    return {}
+
+
+def room_temp_source_unique_id(circuit: str, entity_id: str) -> str:
+    """unique_id des Kippschalters „Sensor verwenden“ für einen HK (v0.8.0)."""
+    return f"idm_hk{circuit.lower()}_room_temp_src_{entity_id.replace('.', '_')}"
 
 
 def hc_room_temp_write_reg(circuit: str) -> int:
