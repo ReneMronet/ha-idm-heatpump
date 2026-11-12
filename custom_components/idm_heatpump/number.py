@@ -1,7 +1,11 @@
 """
 iDM Wärmepumpe (Modbus TCP)
-Version: v0.7.0
-Stand: 2026-02-26
+Version: v0.8.1
+Stand: 2026-11-12
+
+Änderungen v0.8.1:
+- FIX: Werte mit 0,01-Schritten (Heizkurve) werden mit zwei Nachkommastellen
+  zurückgelesen; vorher auf eine gerundet (z. B. 1.04 wurde als 1.0 angezeigt)
 
 Änderungen v0.7.0:
 - Temperatur-Offset Number-Entity pro HK (±5°C, Step 0.5)
@@ -214,7 +218,10 @@ class IDMFloatNumber(CoordinatorEntity, NumberEntity):
     def native_value(self):
         value = self.coordinator.data.get(self._register)
         if value is not None:
-            return round(float(value), 1)
+            # v0.8.1: so genau zurücklesen, wie eingestellt werden kann
+            # (Heizkurve 0,01-Schritte → 2 Nachkommastellen, sonst 1)
+            digits = 2 if self._attr_native_step < 0.1 else 1
+            return round(float(value), digits)
         return None
 
     async def async_set_native_value(self, value: float):

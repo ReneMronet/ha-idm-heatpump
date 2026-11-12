@@ -142,7 +142,7 @@ Unterstützt werden Temperaturfühler, Energiemengen, Leistungen, PV-/Batteriewe
 | --- | --- | --- | --- | --- |
 | `number.idm_hkX_temp_normal` | Raumsolltemp Normal | 1401+i×2 | 15–30 °C | 0.5 |
 | `number.idm_hkX_temp_eco` | Raumsolltemp Eco | 1415+i×2 | 10–25 °C | 0.5 |
-| `number.idm_hkX_curve` | Heizkurve | 1429+i×2 | 0.1–3.5 | 0.1 |
+| `number.idm_hkX_curve` | Heizkurve | 1429+i×2 | 0.1–3.5 | 0.01 |
 | `number.idm_hkX_parallel` | Parallelverschiebung | 1505+i | 0–30 | 1 |
 | `number.idm_hkX_heat_limit` | Heizgrenze | 1442+i | 0–50 °C | 1 |
 | `number.idm_hkX_room_temp_offset` | Raumtemp. Offset (v0.7.0) | – | ±5.0 °C | 0.5 |
@@ -230,6 +230,10 @@ If you encounter issues:
 4. Try increasing the scan interval if you experience timeouts
 
 ## Changelog
+
+### v0.8.1 (2026-11-12)
+
+* **FIX:** Heating curve (0.01 steps) is read back with two decimals; it was rounded to one decimal (e.g. 1.04 was shown as 1.0)
 
 ### v0.8.0 (2026-11-11)
 
